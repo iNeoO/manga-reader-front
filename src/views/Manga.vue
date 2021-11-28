@@ -1,20 +1,26 @@
 <template>
-  <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-    Mangas
-  </h2>
-  <div ref="items">
-    <item
-      v-for="manga in mangas"
-      :key="manga.id"
-      :name="manga.name"
-      :image-id="manga.coverPageId"
-      :to="{ name: 'manga', params: { mangaId: manga.id } }">
-      <template #legend>
-        <span class="text-sm text-gray-400">
-          Number of chapters: {{ manga._count.chapters }}
-        </span>
-      </template>
-    </item>
+  <div v-if="manga">
+    <div class="flex justify-between mb-4">
+      <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        {{ manga.name }}
+      </h2>
+      <p class="font-mediun text-gray-400">chapters: {{ chapters.length }}</p>
+    </div>
+    <div ref="items">
+      <item
+        v-for="(chapter, index) in chapters"
+        :key="chapter.id"
+        :id="`chapter-${index + 1}`"
+        :name="chapter.name"
+        :image-id="chapter.coverPageId"
+        :to="{ name: 'chapter', params: { mangaId: manga.id, chapterId: chapter.id } }">
+        <template #legend>
+          <span class="text-sm text-gray-400">
+            Number of pages: {{ chapter.count }}
+          </span>
+        </template>
+      </item>
+    </div>
   </div>
 </template>
 
@@ -22,7 +28,6 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
   ref,
   Ref,
   onMounted,
@@ -31,19 +36,27 @@ import {
 
 import { useStore } from 'vuex';
 
-import { Manga } from '@/types/manga.type';
-
 import Item from '@/components/utils/Item.vue';
 
+import { ChapterFormated } from '@/types/chapter.type';
+
 export default defineComponent({
-  name: 'Home',
+  name: 'Manga',
   components: {
     Item,
   },
-  setup() {
+  props: {
+    mangaId: {
+      required: true,
+      type: String,
+    },
+  },
+  setup(prop) {
     const store = useStore();
 
-    const mangas: ComputedRef<Manga[]> = computed(() => store.getters['mangaStore/mangas']);
+    const manga = computed(() => store.getters['mangaStore/manga']);
+
+    const chapters = computed(() => manga.value.chapters);
 
     const items: Ref<Element | null> = ref(null);
 
@@ -86,7 +99,26 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await store.dispatch('mangaStore/getMangas');
+      await store.dispatch('mangaStore/getManga', prop.mangaId);
+
+      const indexFound = chapters.value.reverse().findIndex(
+        ((chapter: ChapterFormated) => chapter.isRead),
+      );
+
+      const index = indexFound !== -1 ? indexFound : chapters.value.length - 1;
+
+      const chapter = document.querySelector(`#chapter-${index}`);
+      const main = document.querySelector('main');
+      console.log(main);
+      console.log(chapter);
+      if (main && chapter) {
+        const { top } = chapter.getBoundingClientRect();
+        main.scrollTo({
+          top,
+          behavior: 'auto',
+        });
+      }
+
       if (items.value) {
         const config = { childList: true };
 
@@ -113,7 +145,8 @@ export default defineComponent({
     });
 
     return {
-      mangas,
+      manga,
+      chapters,
       items,
     };
   },

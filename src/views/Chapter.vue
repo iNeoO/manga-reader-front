@@ -1,20 +1,31 @@
 <template>
-  <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-    Mangas
-  </h2>
-  <div ref="items">
-    <item
-      v-for="manga in mangas"
-      :key="manga.id"
-      :name="manga.name"
-      :image-id="manga.coverPageId"
-      :to="{ name: 'manga', params: { mangaId: manga.id } }">
-      <template #legend>
-        <span class="text-sm text-gray-400">
-          Number of chapters: {{ manga._count.chapters }}
-        </span>
-      </template>
-    </item>
+  <div v-if="manga && chapter">
+    <div class="flex justify-between mb-4">
+      <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        {{ manga.name }} : {{ chapter.name }}
+      </h2>
+      <p class="text-gray-400 font-mediun">chapters: {{ manga.chapters.length }}</p>
+    </div>
+    <div ref="items">
+      <item
+        v-for="(page, index) in pages"
+        :key="page.id"
+        :id="`page-${index}`"
+        :name="`Page: ${page.number}`"
+        :image-id="page.id"
+        :to="{
+          name: 'page',
+          params: {
+            mangaId: manga.id,
+            chapterId: chapter.id,
+            pageId: page.id,
+          },
+        }">
+          <template #legend>
+            <div class="text-sm text-gray-400">Page: {{ page.number }} / {{ pages.length }}</div>
+          </template>
+      </item>
+    </div>
   </div>
 </template>
 
@@ -22,7 +33,6 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
   ref,
   Ref,
   onMounted,
@@ -31,21 +41,49 @@ import {
 
 import { useStore } from 'vuex';
 
-import { Manga } from '@/types/manga.type';
-
 import Item from '@/components/utils/Item.vue';
+
+import { Manga } from '@/types/manga.type';
+import { ChapterFormated } from '@/types/chapter.type';
 
 export default defineComponent({
   name: 'Home',
   components: {
     Item,
   },
-  setup() {
+  props: {
+    mangaId: {
+      required: true,
+      type: String,
+    },
+    chapterId: {
+      required: true,
+      type: String,
+    },
+  },
+  setup(prop) {
     const store = useStore();
 
-    const mangas: ComputedRef<Manga[]> = computed(() => store.getters['mangaStore/mangas']);
+    const manga = computed(():Manga => store.getters['mangaStore/manga']);
+    const chapter = computed(():ChapterFormated => store.getters['mangaStore/chapter']);
+
+    if (!manga.value) {
+      store.dispatch('mangaStore/getManga', prop.mangaId);
+    }
+
+    store.dispatch('mangaStore/getChapter', prop.chapterId);
 
     const items: Ref<Element | null> = ref(null);
+
+    const pages = computed(() => {
+      const index = chapter.value.pages.findIndex(
+        ({ id }) => id === chapter.value.lastPageReadId,
+      ) || Infinity;
+      return chapter.value.pages.map((page, i) => {
+        page.isRead = i <= index;
+        return page;
+      });
+    });
 
     let intersectionObserver: IntersectionObserver;
     let mutationObserver: MutationObserver;
@@ -86,7 +124,12 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await store.dispatch('mangaStore/getMangas');
+      if (!manga.value) {
+        store.dispatch('mangaStore/getManga', prop.mangaId);
+      }
+
+      await store.dispatch('mangaStore/getChapter', prop.chapterId);
+
       if (items.value) {
         const config = { childList: true };
 
@@ -113,7 +156,9 @@ export default defineComponent({
     });
 
     return {
-      mangas,
+      manga,
+      chapter,
+      pages,
       items,
     };
   },
