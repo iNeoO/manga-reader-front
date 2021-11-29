@@ -14,8 +14,8 @@ apiClient.interceptors.response.use(
     if (error?.response?.status === 401) {
       Cookies.remove(process.env.VUE_APP_COOKIE_TOKEN_NAME);
       // eslint-disable-next-line import/no-cycle
-      const store = await import('@/store');
-      store.default.commit('authStore/SET_IS_LOGGED', false);
+      const { store } = await import('@/store');
+      store.commit('authStore/SET_IS_LOGGED', false);
       const router = await import('@/router');
       await router.default.push({ name: 'login' });
       return Promise.reject(error);

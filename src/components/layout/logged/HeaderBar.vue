@@ -8,6 +8,20 @@
           stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
+      <router-link v-if="mangaRedirection" :to ="mangaRedirection">
+        <h2 class="text-3xl font-bold text-gray-700 dark:text-gray-100">
+          <span class="hover:text-indigo-500">
+            {{ mangaName }}
+          </span>
+          <router-link v-if="chapterRedirection" :to="chapterRedirection">
+            <span class="text-base">/
+              <span class="hover:text-indigo-500">
+                {{ chapterName }}
+              </span>
+            </span>
+          </router-link>
+        </h2>
+      </router-link>
     </div>
     <div class="flex items-center space-x-4">
       <button @click="isDarkMode = !isDarkMode"
@@ -52,20 +66,21 @@ import Cookies from 'js-cookie';
 import {
   defineComponent,
   computed,
+  ComputedRef,
   ref,
 } from 'vue';
 
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
-import sun from '@/assets/sun.svg';
-import moon from '@/assets/moon.svg';
+import { key } from '@/store/index';
 
 export default defineComponent({
   name: 'loggedHeaderBar',
   setup() {
-    const store = useStore();
+    const store = useStore(key);
     const router = useRouter();
+    const route = useRoute();
 
     const isSidebarOpen = computed({
       get(): boolean {
@@ -85,9 +100,11 @@ export default defineComponent({
       },
     });
 
-    const icon = computed(() => (isDarkMode.value ? sun : moon));
-
     const name = computed(() => store.getters['userStore/user'].username);
+
+    const mangaName = computed(() => store.getters['mangaStore/manga']?.name);
+
+    const chapterName = computed(() => store.getters['mangaStore/chapter']?.name);
 
     const usermenu = ref();
 
@@ -110,9 +127,34 @@ export default defineComponent({
       router.push({ name: 'login' });
     };
 
+    type Redirection = {
+      name: string,
+      params: {
+        [key:string]: string,
+      },
+    };
+
+    const mangaRedirection: ComputedRef<Redirection | null> = computed(() => {
+      if (route.params.chapterId) {
+        return { name: 'manga', params: { mangaId: route.params.mangaId as string } };
+      }
+      return null;
+    });
+
+    const chapterRedirection: ComputedRef<Redirection | null> = computed(() => {
+      if (route.params.pageId) {
+        return { name: 'chapter', params: { chapterId: route.params.chapterId as string, mangaId: route.params.mangaId as string } };
+      }
+      return null;
+    });
+
     return {
       isSidebarOpen,
-      icon,
+      mangaRedirection,
+      chapterRedirection,
+      mangaName,
+      chapterName,
+      route,
       isDarkMode,
       name,
       usermenu,

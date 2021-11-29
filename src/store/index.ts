@@ -1,4 +1,7 @@
-import { createStore } from 'vuex';
+import {
+  InjectionKey,
+} from 'vue';
+import { createStore, Store } from 'vuex';
 
 import stores from '@/store/modules/index';
 import { State as ApplicationStoreState } from '@/store/modules/applicationStore';
@@ -13,6 +16,8 @@ export interface State {
   userStore: UserStoreState,
 }
 
-export default createStore<State>({
+export const key: InjectionKey<Store<State>> = Symbol('store');
+
+export const store = createStore<State>({
   modules: stores,
 });

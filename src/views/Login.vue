@@ -78,6 +78,8 @@ import {
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
+import { key } from '@/store/index';
+
 import Alert from '@/components/utils/Alert.vue';
 
 export default defineComponent({
@@ -86,7 +88,7 @@ export default defineComponent({
     Alert,
   },
   setup() {
-    const store = useStore();
+    const store = useStore(key);
     const router = useRouter();
 
     const email: Ref<string> = ref('');

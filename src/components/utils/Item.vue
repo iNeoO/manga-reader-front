@@ -1,7 +1,8 @@
 <template>
   <router-link :to="to">
     <div class="flex flex-col py-2 px-4 bg-white dark:bg-gray-900 rounded
-      mb-4 shadow-sm">
+      mb-4 shadow-sm"
+      :class="isRead ? 'opacity-50' : ''">
       <div class="flex items-center justify-between">
         <div class="flex items-center">
           <div class="flex">
@@ -42,6 +43,10 @@ export default defineComponent({
     imageId: {
       type: String,
       required: true,
+    },
+    isRead: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {

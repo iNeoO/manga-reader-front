@@ -24,6 +24,7 @@ import {
 } from 'vue';
 
 import { useStore } from 'vuex';
+import { key } from '@/store/index';
 
 import Sidebar from '@/components/layout/logged/Sidebar.vue';
 import HeaderBar from '@/components/layout/logged/HeaderBar.vue';
@@ -37,7 +38,7 @@ export default defineComponent({
     TopButton,
   },
   setup() {
-    const store = useStore();
+    const store = useStore(key);
 
     const isSidebarOpen = computed({
       get(): boolean {

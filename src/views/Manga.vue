@@ -4,7 +4,7 @@
       <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
         {{ manga.name }}
       </h2>
-      <p class="font-mediun text-gray-400">chapters: {{ chapters.length }}</p>
+      <p class="text-gray-400 font-mediun mt-auto">chapters: {{ manga.chapters.length }}</p>
     </div>
     <div ref="items">
       <item
@@ -13,6 +13,7 @@
         :id="`chapter-${index + 1}`"
         :name="chapter.name"
         :image-id="chapter.coverPageId"
+        :is-read="chapter.isRead"
         :to="{ name: 'chapter', params: { mangaId: manga.id, chapterId: chapter.id } }">
         <template #legend>
           <span class="text-sm text-gray-400">
@@ -36,6 +37,8 @@ import {
 
 import { useStore } from 'vuex';
 
+import { key } from '@/store/index';
+
 import Item from '@/components/utils/Item.vue';
 
 import { ChapterFormated } from '@/types/chapter.type';
@@ -52,7 +55,7 @@ export default defineComponent({
     },
   },
   setup(prop) {
-    const store = useStore();
+    const store = useStore(key);
 
     const manga = computed(() => store.getters['mangaStore/manga']);
 
@@ -101,7 +104,7 @@ export default defineComponent({
     onMounted(async () => {
       await store.dispatch('mangaStore/getManga', prop.mangaId);
 
-      const indexFound = chapters.value.reverse().findIndex(
+      const indexFound = [...chapters.value].reverse().findIndex(
         ((chapter: ChapterFormated) => chapter.isRead),
       );
 
@@ -109,8 +112,7 @@ export default defineComponent({
 
       const chapter = document.querySelector(`#chapter-${index}`);
       const main = document.querySelector('main');
-      console.log(main);
-      console.log(chapter);
+
       if (main && chapter) {
         const { top } = chapter.getBoundingClientRect();
         main.scrollTo({

@@ -36,10 +36,12 @@ import { defineComponent, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 
+import { key } from '@/store/index';
+
 export default defineComponent({
   name: 'loggedSidebar',
   setup() {
-    const store = useStore();
+    const store = useStore(key);
     const route = useRoute();
 
     const isSidebarOpen = computed({

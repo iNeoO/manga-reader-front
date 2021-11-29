@@ -2,9 +2,9 @@
   <div v-if="manga && chapter">
     <div class="flex justify-between mb-4">
       <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
-        {{ manga.name }} : {{ chapter.name }}
+        {{ manga.name }} <span class="text-base">/ {{ chapter.name }}</span>
       </h2>
-      <p class="text-gray-400 font-mediun">chapters: {{ manga.chapters.length }}</p>
+      <p class="text-gray-400 font-mediun mt-auto">chapters: {{ manga.chapters.length }}</p>
     </div>
     <div ref="items">
       <item
@@ -13,6 +13,7 @@
         :id="`page-${index}`"
         :name="`Page: ${page.number}`"
         :image-id="page.id"
+        :is-read="page.isRead"
         :to="{
           name: 'page',
           params: {
@@ -33,6 +34,7 @@
 import {
   defineComponent,
   computed,
+  ComputedRef,
   ref,
   Ref,
   onMounted,
@@ -41,9 +43,11 @@ import {
 
 import { useStore } from 'vuex';
 
+import { key } from '@/store/index';
+
 import Item from '@/components/utils/Item.vue';
 
-import { Manga } from '@/types/manga.type';
+import { MangaWithChapters } from '@/types/manga.type';
 import { ChapterFormated } from '@/types/chapter.type';
 
 export default defineComponent({
@@ -62,10 +66,10 @@ export default defineComponent({
     },
   },
   setup(prop) {
-    const store = useStore();
+    const store = useStore(key);
 
-    const manga = computed(():Manga => store.getters['mangaStore/manga']);
-    const chapter = computed(():ChapterFormated => store.getters['mangaStore/chapter']);
+    const manga: ComputedRef<MangaWithChapters> = computed(() => store.getters['mangaStore/manga']);
+    const chapter: ComputedRef<ChapterFormated> = computed(() => store.getters['mangaStore/chapter']);
 
     if (!manga.value) {
       store.dispatch('mangaStore/getManga', prop.mangaId);
@@ -75,15 +79,7 @@ export default defineComponent({
 
     const items: Ref<Element | null> = ref(null);
 
-    const pages = computed(() => {
-      const index = chapter.value.pages.findIndex(
-        ({ id }) => id === chapter.value.lastPageReadId,
-      ) || Infinity;
-      return chapter.value.pages.map((page, i) => {
-        page.isRead = i <= index;
-        return page;
-      });
-    });
+    const pages = computed(() => chapter.value.pages);
 
     let intersectionObserver: IntersectionObserver;
     let mutationObserver: MutationObserver;
@@ -129,6 +125,21 @@ export default defineComponent({
       }
 
       await store.dispatch('mangaStore/getChapter', prop.chapterId);
+
+      if (chapter.value.lastPageReadId) {
+        const index = pages.value.findIndex((page) => page.id === chapter.value.lastPageReadId);
+
+        const page = document.querySelector(`#page-${index}`);
+        const main = document.querySelector('main');
+
+        if (main && page) {
+          const { top } = page.getBoundingClientRect();
+          main.scrollTo({
+            top,
+            behavior: 'auto',
+          });
+        }
+      }
 
       if (items.value) {
         const config = { childList: true };

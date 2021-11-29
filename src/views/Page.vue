@@ -1,22 +1,35 @@
 <template>
-  <!-- <img :src="`/api/pages/${pageId}`"/> -->
-  <pagination :count="10" :page="10" />
+  <img :src="`/api/pages/${pageId}`"/>
+  <pagination
+    :count="nbPages"
+    :page="pageIndex + 1"
+    @page-change="updatePagination" />
+  <go-to
+    :count="nbPages"
+    :page="pageIndex + 1"
+    @page-change="updatePagination" />
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, ComputedRef } from 'vue';
 
 import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
+
+import { key } from '@/store/index';
 
 import Pagination from '@/components/utils/Pagination.vue';
+import GoTo from '@/components/utils/GoTo.vue';
 
-import { Manga } from '@/types/manga.type';
+import { MangaWithChapters } from '@/types/manga.type';
 import { ChapterFormated } from '@/types/chapter.type';
+import { Page } from '@/types/page.type';
 
 export default defineComponent({
   name: 'Home',
   components: {
     Pagination,
+    GoTo,
   },
   props: {
     mangaId: {
@@ -33,10 +46,12 @@ export default defineComponent({
     },
   },
   setup(prop) {
-    const store = useStore();
+    const store = useStore(key);
+    const router = useRouter();
+    const route = useRoute();
 
-    const manga = computed(():Manga => store.getters['mangaStore/manga']);
-    const chapter = computed(():ChapterFormated => store.getters['mangaStore/chapter']);
+    const manga: ComputedRef<MangaWithChapters> = computed(() => store.getters['mangaStore/manga']);
+    const chapter: ComputedRef<ChapterFormated> = computed(() => store.getters['mangaStore/chapter']);
 
     if (!manga.value) {
       store.dispatch('mangaStore/getManga', prop.mangaId);
@@ -46,13 +61,18 @@ export default defineComponent({
       store.dispatch('mangaStore/getChapter', prop.chapterId);
     }
 
-    const pageIndex = computed(
-      () => chapter.value.pages.findIndex(({ id }) => id === prop.chapterId),
+    const pageIndex: ComputedRef<number> = computed(
+      () => chapter?.value?.pages?.findIndex(({ id }) => id === prop.pageId),
     );
-    const page = computed(() => chapter.value.pages[pageIndex.value]);
+
+    const nbPages: ComputedRef<number> = computed(() => (chapter.value?.pages?.length) || 10);
+
+    const page: ComputedRef<Page> = computed(() => chapter.value.pages[pageIndex.value]);
+
     const previousPage = computed(
       () => (pageIndex.value > 0 ? chapter.value.pages[pageIndex.value - 1] : null),
     );
+
     const nextPage = computed(
       () => (
         pageIndex.value < chapter.value.pages.length - 1
@@ -61,12 +81,31 @@ export default defineComponent({
       ),
     );
 
+    const updatePage = (pageId: string) => {
+      router.push({
+        name: 'page',
+        params: {
+          mangaId: route.params.mangaId,
+          chapterId: route.params.chapterId,
+          pageId,
+        },
+      });
+    };
+
+    const updatePagination = (index: number) => {
+      const pageToGo = chapter.value.pages[index - 1];
+      updatePage(pageToGo.id);
+    };
+
     return {
       manga,
       chapter,
       page,
+      nbPages,
+      pageIndex,
       previousPage,
       nextPage,
+      updatePagination,
     };
   },
 });

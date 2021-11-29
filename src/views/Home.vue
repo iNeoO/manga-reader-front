@@ -31,6 +31,8 @@ import {
 
 import { useStore } from 'vuex';
 
+import { key } from '@/store/index';
+
 import { Manga } from '@/types/manga.type';
 
 import Item from '@/components/utils/Item.vue';
@@ -41,7 +43,7 @@ export default defineComponent({
     Item,
   },
   setup() {
-    const store = useStore();
+    const store = useStore(key);
 
     const mangas: ComputedRef<Manga[]> = computed(() => store.getters['mangaStore/mangas']);
 

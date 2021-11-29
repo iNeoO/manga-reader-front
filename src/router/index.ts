@@ -10,16 +10,16 @@ declare module 'vue-router' {
 }
 
 const isNotLogged = async () => {
-  const store = await import('@/store');
-  if (!store.default.getters['authStore/isLogged']) {
+  const { store } = await import('@/store');
+  if (!store.getters['authStore/isLogged']) {
     return true;
   }
   return { name: 'home' };
 };
 
 const isLogged = async () => {
-  const store = await import('@/store');
-  if (store.default.getters['authStore/isLogged']) {
+  const { store } = await import('@/store');
+  if (store.getters['authStore/isLogged']) {
     return true;
   }
   return { name: 'login' };
