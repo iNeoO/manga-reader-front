@@ -8,10 +8,10 @@
       :key="manga.id"
       :name="manga.name"
       :image-id="manga.coverPageId"
-      :to="{ name: 'manga', params: { mangaId: manga.id } }">
+      :to="{ name: 'manga', params: { mangaName: manga.name } }">
       <template #legend>
         <span class="text-sm text-gray-400">
-          Number of chapters: {{ manga._count.chapters }}
+          Number of chapters: {{ manga._count?.chapters }}
         </span>
       </template>
     </item>

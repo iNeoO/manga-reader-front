@@ -14,10 +14,10 @@
         :name="chapter.name"
         :image-id="chapter.coverPageId"
         :is-read="chapter.isRead"
-        :to="{ name: 'chapter', params: { mangaId: manga.id, chapterId: chapter.id } }">
+        :to="{ name: 'chapter', params: { mangaName: manga.name, chapterNumber: chapter.number } }">
         <template #legend>
           <span class="text-sm text-gray-400">
-            Number of pages: {{ chapter.count }}
+            Number of pages read: {{ chapter.countPagesRead }} / {{ chapter.count }}
           </span>
         </template>
       </item>
@@ -41,6 +41,8 @@ import { key } from '@/store/index';
 
 import Item from '@/components/utils/Item.vue';
 
+import { checkManga } from '@/utils/dataGetter';
+
 import { ChapterFormated } from '@/types/chapter.type';
 
 export default defineComponent({
@@ -49,12 +51,12 @@ export default defineComponent({
     Item,
   },
   props: {
-    mangaId: {
+    mangaName: {
       required: true,
       type: String,
     },
   },
-  setup(prop) {
+  setup(props) {
     const store = useStore(key);
 
     const manga = computed(() => store.getters['mangaStore/manga']);
@@ -102,7 +104,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await store.dispatch('mangaStore/getManga', prop.mangaId);
+      await checkManga(props.mangaName);
 
       const indexFound = [...chapters.value].reverse().findIndex(
         ((chapter: ChapterFormated) => chapter.isRead),

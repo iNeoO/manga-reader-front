@@ -45,7 +45,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: '/manga/:mangaId',
+    path: '/manga/:mangaName',
     name: 'manga',
     props: true,
     component: () => import(/* webpackChunkName: "manga" */ '../views/Manga.vue'),
@@ -55,7 +55,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: '/manga/:mangaId/chapter/:chapterId',
+    path: '/manga/:mangaName/chapter/:chapterNumber',
     name: 'chapter',
     props: true,
     component: () => import(/* webpackChunkName: "chapter" */ '../views/Chapter.vue'),
@@ -65,7 +65,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: '/manga/:mangaId/chapter/:chapterId/page/:pageId',
+    path: '/manga/:mangaName/chapter/:chapterNumber/page/:pageNumber',
     name: 'page',
     props: true,
     component: () => import(/* webpackChunkName: "page" */ '../views/Page.vue'),
@@ -82,6 +82,10 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       layout: 'Logged',
     },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/',
   },
 ];
 

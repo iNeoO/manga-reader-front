@@ -2,14 +2,14 @@ import { Commit } from 'vuex';
 
 import axios from '@/plugins/axios';
 import { Manga, MangaWithChapters } from '@/types/manga.type';
-import { Chapter } from '@/types/chapter.type';
+import { ChapterFormated } from '@/types/chapter.type';
 
 export type State = {
   mangas: Manga[];
   isMangasLoading: boolean,
   manga: MangaWithChapters;
   isMangaLoading: boolean;
-  chapter: Chapter;
+  chapter: ChapterFormated;
   isChapterLoading: boolean,
   isPostChapterReadLoading: boolean,
   isDeleteChapterReadLoading: boolean,
@@ -59,10 +59,10 @@ const actions = {
   async getChapter(
     { commit }: { commit: Commit },
     id: string,
-  ): Promise<Chapter> {
+  ): Promise<ChapterFormated> {
     commit('SET_IS_CHAPTER_LOADING', true);
     try {
-      const { data }: { data: Chapter } = await axios.get(`chapters/${id}`);
+      const { data }: { data: ChapterFormated } = await axios.get(`chapters/${id}`);
       commit('SET_CHAPTER', data);
       commit('SET_IS_CHAPTER_LOADING', false);
       return data;
@@ -72,12 +72,13 @@ const actions = {
     }
   },
   async postChapterReading(
-    { commit }: { commit: Commit },
-    id: string,
-  ): Promise<Chapter> {
+    { commit }: { commit: Commit }, params: {
+      chapterId: string, isRead: boolean, lastPageReadId: string,
+    },
+  ): Promise<ChapterFormated> {
     commit('SET_IS_POST_CHAPTER_READ_LOADING', true);
     try {
-      const { data }: { data: Chapter } = await axios.post('chapters-read/', { params: { id } });
+      const { data }: { data: ChapterFormated } = await axios.post('chapters-read/', params);
       commit('SET_CHAPTER', data);
       commit('SET_IS_POST_CHAPTER_READ_LOADING', false);
       return data;
@@ -89,7 +90,7 @@ const actions = {
   async deleteChapterReading(
     { commit }: { commit: Commit },
     id: string,
-  ): Promise<Chapter> {
+  ): Promise<ChapterFormated> {
     commit('SET_IS_DELETE_CHAPTER_READ_LOADING', true);
     try {
       const { data } = await axios.delete('chapters-read/', { params: { id } });
@@ -108,7 +109,7 @@ const getters = {
   isMangasLoading: (state: State): boolean => state.isMangasLoading,
   manga: (state: State): MangaWithChapters => state.manga,
   isMangaLoading: (state: State): boolean => state.isMangaLoading,
-  chapter: (state: State): Chapter => state.chapter,
+  chapter: (state: State): ChapterFormated => state.chapter,
   isChapterLoading: (state: State): boolean => state.isChapterLoading,
   isPostChapterReadLoading: (state: State): boolean => state.isPostChapterReadLoading,
   isDeleteChapterReadLoading: (state: State): boolean => state.isDeleteChapterReadLoading,
@@ -127,7 +128,7 @@ const mutations = {
   SET_IS_MANGA_LOADING(state: State, isMangaLoading: boolean): void {
     state.isMangaLoading = isMangaLoading;
   },
-  SET_CHAPTER(state: State, chapter: Chapter): void {
+  SET_CHAPTER(state: State, chapter: ChapterFormated): void {
     state.chapter = chapter;
   },
   SET_IS_CHAPTER_LOADING(state: State, isChapterLoading: boolean): void {

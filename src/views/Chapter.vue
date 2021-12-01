@@ -17,9 +17,9 @@
         :to="{
           name: 'page',
           params: {
-            mangaId: manga.id,
-            chapterId: chapter.id,
-            pageId: page.id,
+            mangaName: manga.name,
+            chapterNumber: `${chapter.number}`,
+            pageNumber: `${page.number}`,
           },
         }">
           <template #legend>
@@ -47,6 +47,8 @@ import { key } from '@/store/index';
 
 import Item from '@/components/utils/Item.vue';
 
+import { checkChapter } from '@/utils/dataGetter';
+
 import { MangaWithChapters } from '@/types/manga.type';
 import { ChapterFormated } from '@/types/chapter.type';
 
@@ -56,26 +58,20 @@ export default defineComponent({
     Item,
   },
   props: {
-    mangaId: {
+    mangaName: {
       required: true,
       type: String,
     },
-    chapterId: {
+    chapterNumber: {
       required: true,
       type: String,
     },
   },
-  setup(prop) {
+  setup(props) {
     const store = useStore(key);
 
     const manga: ComputedRef<MangaWithChapters> = computed(() => store.getters['mangaStore/manga']);
     const chapter: ComputedRef<ChapterFormated> = computed(() => store.getters['mangaStore/chapter']);
-
-    if (!manga.value) {
-      store.dispatch('mangaStore/getManga', prop.mangaId);
-    }
-
-    store.dispatch('mangaStore/getChapter', prop.chapterId);
 
     const items: Ref<Element | null> = ref(null);
 
@@ -120,11 +116,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      if (!manga.value) {
-        store.dispatch('mangaStore/getManga', prop.mangaId);
-      }
-
-      await store.dispatch('mangaStore/getChapter', prop.chapterId);
+      await checkChapter(props.mangaName, parseInt(props.chapterNumber, 10));
 
       if (chapter.value.lastPageReadId) {
         const index = pages.value.findIndex((page) => page.id === chapter.value.lastPageReadId);

@@ -6,7 +6,7 @@
 
       <header-bar @open-sidebar="isSidebarOpen = true" />
 
-      <main class="flex-1 overflow-x-hidden overflow-y-auto">
+      <main class="flex-1 overflow-x-hidden overflow-y-auto pb-24">
         <div class="container mx-auto px-6 py-8">
           <slot />
         </div>

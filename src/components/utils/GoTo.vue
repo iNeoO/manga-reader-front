@@ -1,11 +1,14 @@
 <template>
-  <span>Go to</span>
-  <input
-    type="text"
-    class="default-input"
-    v-model.number="input"
-    @keyup.enter="updatePagination"
-    @blur="updatePagination" />
+  <div>
+    <div class="inline-block mr-4 my-auto text-gray-700 dark:text-gray-300">Go to</div>
+    <input
+      type="text"
+      class="default-input input-max-width inline-block my-auto py-1.5 px-2 text-center text-xs"
+      v-model.number="input"
+      maxlength="3"
+      @keyup.enter="updatePagination"
+      @blur="updatePagination" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -52,3 +55,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.input-max-width {
+  max-width: 4rem;
+}
+</style>
