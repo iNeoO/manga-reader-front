@@ -3,6 +3,7 @@ import { Commit } from 'vuex';
 import axios from '@/plugins/axios';
 import { Manga, MangaWithChapters } from '@/types/manga.type';
 import { ChapterFormated } from '@/types/chapter.type';
+import { ChapterRead } from '@/types/chapterRead.type';
 
 export type State = {
   mangas: Manga[];
@@ -10,7 +11,9 @@ export type State = {
   manga: MangaWithChapters;
   isMangaLoading: boolean;
   chapter: ChapterFormated;
-  isChapterLoading: boolean,
+  isChapterLoading: boolean
+  chaptersRead: ChapterRead[],
+  isChaptersReadLoading: boolean,
   isPostChapterReadLoading: boolean,
   isDeleteChapterReadLoading: boolean,
 };
@@ -22,6 +25,8 @@ const state = {
   isMangaLoading: false,
   chapter: null,
   isChapterLoading: false,
+  chaptersRead: [],
+  isChaptersReadLoading: false,
   isPostChapterReadLoading: false,
   isDeleteChapterReadLoading: false,
 };
@@ -87,6 +92,20 @@ const actions = {
       throw error;
     }
   },
+  async getChaptersRead(
+    { commit }: { commit: Commit },
+  ): Promise<ChapterRead[]> {
+    commit('SET_IS_CHAPTERS_READ_LOADING', true);
+    try {
+      const { data }: { data: ChapterRead[] } = await axios.get('chapters-read/');
+      commit('SET_CHAPTERS_READ', data);
+      commit('SET_IS_CHAPTERS_READ_LOADING', false);
+      return data;
+    } catch (error) {
+      commit('SET_IS_CHAPTERS_READ_LOADING', false);
+      throw error;
+    }
+  },
   async deleteChapterReading(
     { commit }: { commit: Commit },
     id: string,
@@ -111,6 +130,8 @@ const getters = {
   isMangaLoading: (state: State): boolean => state.isMangaLoading,
   chapter: (state: State): ChapterFormated => state.chapter,
   isChapterLoading: (state: State): boolean => state.isChapterLoading,
+  chaptersRead: (state: State): ChapterRead[] => state.chaptersRead,
+  isChaptersReadLoading: (state: State): boolean => state.isChaptersReadLoading,
   isPostChapterReadLoading: (state: State): boolean => state.isPostChapterReadLoading,
   isDeleteChapterReadLoading: (state: State): boolean => state.isDeleteChapterReadLoading,
 };
@@ -133,6 +154,12 @@ const mutations = {
   },
   SET_IS_CHAPTER_LOADING(state: State, isChapterLoading: boolean): void {
     state.isChapterLoading = isChapterLoading;
+  },
+  SET_CHAPTERS_READ(state: State, chaptersRead: ChapterRead[]): void {
+    state.chaptersRead = chaptersRead;
+  },
+  SET_IS_CHAPTERS_READ_LOADING(state: State, isChaptersReadLoading: boolean): void {
+    state.isChaptersReadLoading = isChaptersReadLoading;
   },
   SET_IS_POST_CHAPTER_READ_LOADING(state: State, isPostChapterReadLoading: boolean): void {
     state.isPostChapterReadLoading = isPostChapterReadLoading;

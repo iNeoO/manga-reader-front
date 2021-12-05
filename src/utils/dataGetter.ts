@@ -23,7 +23,7 @@ export const checkManga = async (mangaName: string): Promise<MangaWithChapters> 
 
   const manga: MangaWithChapters = store.getters['mangaStore/manga'];
 
-  if (manga && manga.id) {
+  if (manga?.id && manga?.name === mangaName) {
     return manga;
   }
 
@@ -56,7 +56,7 @@ export const checkChapter = async (
 
   const chapter: ChapterFormated = store.getters['mangaStore/chapter'];
 
-  if (chapter && chapter.id) {
+  if (chapter?.id && chapter?.number === chapterNumber) {
     return chapter;
   }
 

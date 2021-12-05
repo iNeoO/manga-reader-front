@@ -20,6 +20,12 @@
       :class="isActive(['home', 'manga', 'chapter', 'page']) ? 'bg-gray-200 dark:bg-gray-800' : ''">
       Mangas
     </router-link>
+    <router-link :to="{ name: 'chaptersRead' }"
+      class="mt-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700
+        dark:hover:text-gray-100  hover:bg-gray-200 dark:hover:bg-gray-800 rounded"
+      :class="isActive(['chaptersRead']) ? 'bg-gray-200 dark:bg-gray-800' : ''">
+      Chapters read
+    </router-link>
     <router-link :to="{ name: 'profile' }"
       class="mt-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700
         dark:hover:text-gray-100  hover:bg-gray-200 dark:hover:bg-gray-800 rounded"

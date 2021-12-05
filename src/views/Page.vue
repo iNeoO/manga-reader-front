@@ -1,15 +1,35 @@
 <template>
   <div class="table mx-auto">
-    <div class="text-right">
+    <div class="flex justify-between mb-2">
+      <div>
+        <router-link
+          v-if="!isLastChapter"
+          class="text-gray-700 dark:text-gray-300
+            underline
+            hover:text-indigo-500
+            dark:hover:text-indigo-500"
+          :to="{
+            name: 'page',
+            params: {
+              mangaName: mangaName,
+              chapterNumber: parseInt(chapterNumber, 10) + 1,
+              pageNumber: 1,
+            },
+          }">
+          <span>Go To next chapter</span>
+        </router-link>
+      </div>
       <button
         @click="reloadImage"
-        class="inline-block text-gray-600 dark:text-gray-300
-          focus:outline-none hover:scale-110 focus:animate-bounce">
+        class="inline-block text-gray-700 dark:text-gray-300
+          hover:text-indigo-500
+          dark:hover:text-indigo-500
+          hover:animate-spin">
         <reload-icon />
       </button>
     </div>
     <div class="relative inline-block">
-      <img id="page" class="image" :src="`/api/pages/${pageId}`"/>
+      <img v-if="pageId" id="page" class="image" :src="`/api/pages/${pageId}`"/>
       <button
         class="absolute inset-y-0 w-1/4 focus:outline-none"
         :disabled="!previousPage"
@@ -42,6 +62,7 @@ import {
   ref,
   Ref,
   onMounted,
+  onBeforeUnmount,
 } from 'vue';
 
 import { useStore } from 'vuex';
@@ -99,12 +120,20 @@ export default defineComponent({
 
     const nbPages: ComputedRef<number> = computed(() => (chapter.value?.pages?.length) || 10);
 
-    const page: ComputedRef<Page> = computed(() => chapter.value.pages[pageIndex.value]);
-    const pageId: ComputedRef<string> = computed(() => page.value.id);
+    const page: ComputedRef<Page> = computed(() => chapter.value?.pages?.[pageIndex.value]);
+    const pageId: ComputedRef<string> = computed(() => page.value?.id);
 
     const previousPage = computed(
       () => (pageIndex.value > 0 ? chapter.value.pages[pageIndex.value - 1] : null),
     );
+
+    const updateChapterReading = (chapterId: string, isRead: boolean, lastPageReadId: string) => {
+      store.dispatch('mangaStore/postChapterReading', {
+        chapterId,
+        isRead,
+        lastPageReadId,
+      });
+    };
 
     const goToPrevious = () => {
       if (previousPage.value?.id) {
@@ -116,6 +145,8 @@ export default defineComponent({
             pageNumber: previousPage.value.number,
           },
         });
+        updateChapterReading(chapter.value.id, false, previousPage.value.id);
+        goToRef.value.updatePage(previousPage.value.number);
       }
     };
 
@@ -137,6 +168,12 @@ export default defineComponent({
             pageNumber: nextPage.value.number,
           },
         });
+        updateChapterReading(
+          chapter.value.id,
+          nextPage.value.number === chapter.value.pages.length,
+          nextPage.value.id,
+        );
+        goToRef.value.updatePage(nextPage.value.number);
       }
     };
 
@@ -149,11 +186,7 @@ export default defineComponent({
           pageNumber: index,
         },
       });
-      store.dispatch('mangaStore/postChapterReading', {
-        chapterId: chapter.value.id,
-        isRead: !nextPage.value,
-        lastPageReadId: pageIdToGo,
-      });
+      updateChapterReading(chapter.value.id, index === chapter.value.pages.length, pageIdToGo);
       goToRef.value.updatePage(index);
     };
 
@@ -170,6 +203,18 @@ export default defineComponent({
       }
     };
 
+    const keyEventHandler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (e.key === 'ArrowRight') {
+        goToNext();
+      }
+    };
+
+    const isLastChapter: ComputedRef<boolean> = computed(
+      () => chapter.value?.number === manga.value?.chapters?.length,
+    );
+
     onMounted(async () => {
       await checkPage(
         props.mangaName,
@@ -177,6 +222,12 @@ export default defineComponent({
         parseInt(props.pageNumber, 10),
       );
       isInited.value = true;
+
+      document.addEventListener('keyup', keyEventHandler);
+    });
+
+    onBeforeUnmount(() => {
+      document.removeEventListener('keyup', keyEventHandler);
     });
 
     return {
@@ -194,6 +245,7 @@ export default defineComponent({
       goToPrevious,
       goToNext,
       reloadImage,
+      isLastChapter,
     };
   },
 });

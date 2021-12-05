@@ -8,8 +8,24 @@
           stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
+      <div class="flex">
+        <router-link
+          :to="{ name: 'home' }"
+          class="text-gray-700 dark:text-gray-300 mr-4
+            hover:text-indigo-500
+            dark:hover:text-indigo-500
+            transform hover:scale-125">
+          <svg x="0px" y="0px"
+            width="26" height="26"
+            viewBox="0 0 16 16"
+            fill="currentColor">
+            <!-- eslint-disable-next-line max-len -->
+            <path d="M 8 1.320313 L 0.660156 8.132813 L 1.339844 8.867188 L 2 8.253906 L 2 14 L 7 14 L 7 9 L 9 9 L 9 14 L 14 14 L 14 8.253906 L 14.660156 8.867188 L 15.339844 8.132813 Z M 8 2.679688 L 13 7.328125 L 13 13 L 10 13 L 10 8 L 6 8 L 6 13 L 3 13 L 3 7.328125 Z"></path>
+          </svg>
+        </router-link>
+      </div>
       <router-link v-if="mangaRedirection" :to ="mangaRedirection">
-        <h2 class="text-3xl font-bold text-gray-700 dark:text-gray-100">
+        <h2 class="text-3xl font-bold text-gray-700 dark:text-gray-300">
           <span class="hover:text-indigo-500">
             {{ mangaName }}
           </span>
@@ -25,7 +41,8 @@
     </div>
     <div class="flex items-center space-x-4">
       <button @click="isDarkMode = !isDarkMode"
-        class="flex text-gray-600 dark:text-gray-300 focus:outline-none">
+        class="flex text-gray-600 dark:text-gray-300 hover:text-indigo-500
+            dark:hover:text-indigo-500 transform focus:outline-none hover:scale-125">
         <svg v-if="isDarkMode" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
           <!-- eslint-disable-next-line max-len -->
           <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
@@ -39,10 +56,11 @@
       <div class="relative">
         <button @click.stop="openDropdown"
           ref="usermenu"
-          class="flex items-center space-x-2 relative focus:outline-none">
-          <h2 class="text-gray-700 dark:text-gray-300 text-sm hidden sm:block">
-            {{ name }}
-          </h2>
+          class="flex items-center space-x-2 relative hover:text-indigo-500
+            text-gray-600 dark:text-gray-300
+            dark:hover:text-indigo-500 transform focus:outline-none hover:scale-125"
+          :class="isDropdownOpen ? 'text-indigo-500 dark:text-indigo-500 scale-125' : ''">
+          {{ name }}
         </button>
         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md
           overflow-hidden shadow-xl z-10"
@@ -135,15 +153,21 @@ export default defineComponent({
     };
 
     const mangaRedirection: ComputedRef<Redirection | null> = computed(() => {
-      if (route.params.chapterId) {
-        return { name: 'manga', params: { mangaId: route.params.mangaId as string } };
+      if (route.params.chapterNumber) {
+        return { name: 'manga', params: { mangaName: route.params.mangaName as string } };
       }
       return null;
     });
 
     const chapterRedirection: ComputedRef<Redirection | null> = computed(() => {
-      if (route.params.pageId) {
-        return { name: 'chapter', params: { chapterId: route.params.chapterId as string, mangaId: route.params.mangaId as string } };
+      if (route.params.pageNumber) {
+        return {
+          name: 'chapter',
+          params: {
+            chapterNumber: route.params.chapterNumber as string,
+            mangaName: route.params.mangaName as string,
+          },
+        };
       }
       return null;
     });

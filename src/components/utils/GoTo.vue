@@ -6,6 +6,8 @@
       class="default-input input-max-width inline-block my-auto py-1.5 px-2 text-center text-xs"
       v-model.number="input"
       maxlength="3"
+      @keyup.left.stop
+      @keyup.right.stop
       @keyup.enter="updatePagination"
       @blur="updatePagination" />
   </div>
