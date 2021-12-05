@@ -45,6 +45,15 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
+    path: '/chapters-read',
+    name: 'chaptersRead',
+    component: () => import(/* webpackChunkName: "chaptersRead" */ '../views/ChaptersRead.vue'),
+    beforeEnter: isLogged,
+    meta: {
+      layout: 'Logged',
+    },
+  },
+  {
     path: '/manga/:mangaName',
     name: 'manga',
     props: true,
