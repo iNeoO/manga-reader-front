@@ -1,30 +1,38 @@
 import Cookies from 'js-cookie';
-import { Commit } from 'vuex';
+import {
+  Store as VuexStore,
+  CommitOptions,
+  DispatchOptions,
+  MutationTree,
+  ActionTree,
+  GetterTree,
+  Module,
+} from 'vuex';
 import axios from '@/plugins/axios';
 
-export type State = {
-  isLogged: boolean;
-  isLoginLoading: boolean;
-};
+import { AuthMutationTypes } from '@/store/types/mutation.type';
+import { AuthActionTypes } from '@/store/types/action.type';
 
-type LoginReturn = {
-  access_token: string,
-}
+import { RootState, AuthState } from '@/store/types/state.type';
+import {
+  AugmentedActionContext,
+  AuthGetters,
+  AuthActions,
+  AuthMutations,
+} from '@/store/types/authStore.type';
+import { LoginReturn, LoginForm } from '@/types/auth.type';
 
-const state = {
+export const state = {
   isLogged: false,
   isLoginLoading: false,
 };
 
-const actions = {
-  async login(
-    { commit }: { commit: Commit },
-    form: { email: string, password: string },
-  ): Promise<LoginReturn> {
-    commit('SET_IS_LOGIN_LOADING', true);
+export const actions: ActionTree<AuthState, RootState> & AuthActions = {
+  [AuthActionTypes.login]: async ({ commit }: AugmentedActionContext, payload: LoginForm) => {
+    commit(AuthMutationTypes.SET_IS_LOGIN_LOADING, true);
     try {
-      const { data } = await axios.post('auth/login/', form);
-      commit('SET_IS_LOGGED', true);
+      const { data }: { data: LoginReturn } = await axios.post('auth/login/', payload);
+      commit(AuthMutationTypes.SET_IS_LOGGED, true);
       Cookies.set(
         process.env.VUE_APP_COOKIE_TOKEN_NAME,
         data.access_token,
@@ -33,32 +41,50 @@ const actions = {
           secure: true,
         },
       );
-      commit('SET_IS_LOGIN_LOADING', false);
+      commit(AuthMutationTypes.SET_IS_LOGIN_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_LOGGED', false);
-      commit('SET_IS_LOGIN_LOADING', false);
+      commit(AuthMutationTypes.SET_IS_LOGGED, false);
+      commit(AuthMutationTypes.SET_IS_LOGIN_LOADING, false);
       throw error;
     }
   },
 };
 
-const getters = {
-  isLogged: (state: State): boolean => state.isLogged,
-  isLoginLoading: (state: State): boolean => state.isLoginLoading,
+export const getters: GetterTree<AuthState, RootState> & AuthGetters = {
+  'authStore/isLogged': (state: AuthState): boolean => state.isLogged,
+  'authStore/isLoginLoading': (state: AuthState): boolean => state.isLoginLoading,
 };
 
-const mutations = {
-  SET_IS_LOGGED(state: State, isLogged: boolean): void {
-    state.isLogged = isLogged;
+export const mutations: MutationTree<AuthState> & AuthMutations = {
+  [AuthMutationTypes.SET_IS_LOGGED](state: AuthState, payload: boolean): void {
+    state.isLogged = payload;
   },
-  SET_IS_LOGIN_LOADING(state: State, isLoginLoading: boolean): void {
-    state.isLoginLoading = isLoginLoading;
+  [AuthMutationTypes.SET_IS_LOGIN_LOADING](state: AuthState, payload: boolean): void {
+    state.isLoginLoading = payload;
   },
 };
 
-export default {
-  namespaced: true,
+export type AuthStore<S = AuthState> = Omit<VuexStore<S>, 'getters' | 'commit' | 'dispatch'>
+  & {
+  commit<K extends keyof AuthMutations, P extends Parameters<AuthMutations[K]>[1]>(
+      key: K,
+      payload?: P,
+      options?: CommitOptions
+    ): ReturnType<AuthMutations[K]>;
+  } & {
+  dispatch<K extends keyof AuthActions>(
+      key: K,
+      payload?: Parameters<AuthActions[K]>[1],
+      options?: DispatchOptions
+    ): ReturnType<AuthActions[K]>;
+  } & {
+    getters: {
+      [K in keyof AuthGetters]: ReturnType<AuthGetters[K]>
+    };
+  };
+
+export const store: Module<AuthState, RootState> = {
   state,
   getters,
   actions,

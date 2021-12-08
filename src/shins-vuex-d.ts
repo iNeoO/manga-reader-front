@@ -1,20 +1,20 @@
-import { Store } from 'vuex';
-import { State as ApplicationStoreState } from '@/store/modules/applicationStore';
-import { State as AuthStoreState } from '@/store/modules/authStore';
-import { State as MangaStoreState } from '@/store/modules/mangaStore';
-import { State as UserStoreState } from '@/store/modules/userStore';
+// import { Store } from 'vuex';
+// import { ApplicationState } from '@/store/types/applicationStore.type';
+// import { AuthState } from '@/store/types/authStore.type';
+// import { MangaState } from '@/store/types/mangaStore.type';
+// import { UserState } from '@/store/types/userStore.type';
 
-declare module '@vue/runtime-core' {
-  // declare your own store states
-  interface State {
-    applicationStore: ApplicationStoreState,
-    authStore: AuthStoreState,
-    mangaStore: MangaStoreState,
-    userStore: UserStoreState,
-  }
+// declare module '@vue/runtime-core' {
+//   // declare your own store states
+//   interface State {
+//     applicationStore: ApplicationState,
+//     authStore: AuthState,
+//     mangaStore: MangaState,
+//     userStore: UserState,
+//   }
 
-  // provide typings for `this.$store`
-  interface ComponentCustomProperties {
-    $store: Store<State>
-  }
-}
+//   // provide typings for `this.$store`
+//   interface ComponentCustomProperties {
+//     $store: Store<State>
+//   }
+// }

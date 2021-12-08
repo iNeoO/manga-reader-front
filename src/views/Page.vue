@@ -58,17 +58,15 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
   ref,
   Ref,
   onMounted,
   onBeforeUnmount,
 } from 'vue';
 
-import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
 
 import Pagination from '@/components/utils/Pagination.vue';
 import GoTo from '@/components/utils/GoTo.vue';
@@ -76,9 +74,7 @@ import ReloadIcon from '@/components/utils/ReloadIcon.vue';
 
 import { checkPage } from '@/utils/dataGetter';
 
-import { MangaWithChapters } from '@/types/manga.type';
-import { ChapterFormated } from '@/types/chapter.type';
-import { Page } from '@/types/page.type';
+import { MangaActionTypes } from '@/store/types/action.type';
 
 export default defineComponent({
   name: 'Home',
@@ -102,33 +98,33 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const store = useStore(key);
+    const store = useStore();
     const router = useRouter();
 
     const goToRef = ref();
 
     const isInited: Ref<boolean> = ref(false);
 
-    const manga: ComputedRef<MangaWithChapters> = computed(() => store.getters['mangaStore/manga']);
-    const chapter: ComputedRef<ChapterFormated> = computed(() => store.getters['mangaStore/chapter']);
+    const manga = computed(() => store.getters['mangaStore/manga']);
+    const chapter = computed(() => store.getters['mangaStore/chapter']);
 
-    const pageIndex: ComputedRef<number> = computed(
+    const pageIndex = computed(
       () => chapter?.value?.pages?.findIndex(
         ({ number }) => number === parseInt(props.pageNumber, 10),
-      ),
+      ) || 0,
     );
 
-    const nbPages: ComputedRef<number> = computed(() => (chapter.value?.pages?.length) || 10);
+    const nbPages = computed(() => (chapter.value?.pages?.length) || 10);
 
-    const page: ComputedRef<Page> = computed(() => chapter.value?.pages?.[pageIndex.value]);
-    const pageId: ComputedRef<string> = computed(() => page.value?.id);
+    const page = computed(() => chapter.value?.pages?.[pageIndex.value]);
+    const pageId = computed(() => page.value?.id);
 
     const previousPage = computed(
-      () => (pageIndex.value > 0 ? chapter.value.pages[pageIndex.value - 1] : null),
+      () => (pageIndex.value > 0 ? chapter.value?.pages[pageIndex.value - 1] : null),
     );
 
     const updateChapterReading = (chapterId: string, isRead: boolean, lastPageReadId: string) => {
-      store.dispatch('mangaStore/postChapterReading', {
+      store.dispatch(MangaActionTypes.postChapterReading, {
         chapterId,
         isRead,
         lastPageReadId,
@@ -136,7 +132,7 @@ export default defineComponent({
     };
 
     const goToPrevious = () => {
-      if (previousPage.value?.id) {
+      if (previousPage.value?.id && chapter.value) {
         router.push({
           name: 'page',
           params: {
@@ -152,7 +148,7 @@ export default defineComponent({
 
     const nextPage = computed(
       () => (
-        pageIndex.value < chapter.value?.pages?.length - 1
+        pageIndex.value < (chapter.value?.pages?.length || 0) - 1
           ? chapter?.value?.pages?.[pageIndex.value + 1]
           : null
       ),
@@ -168,12 +164,14 @@ export default defineComponent({
             pageNumber: nextPage.value.number,
           },
         });
-        updateChapterReading(
-          chapter.value.id,
-          nextPage.value.number === chapter.value.pages.length,
-          nextPage.value.id,
-        );
-        goToRef.value.updatePage(nextPage.value.number);
+        if (chapter.value) {
+          updateChapterReading(
+            chapter.value.id,
+            nextPage.value.number === chapter.value.pages.length,
+            nextPage.value.id,
+          );
+          goToRef.value.updatePage(nextPage.value.number);
+        }
       }
     };
 
@@ -186,13 +184,17 @@ export default defineComponent({
           pageNumber: index,
         },
       });
-      updateChapterReading(chapter.value.id, index === chapter.value.pages.length, pageIdToGo);
-      goToRef.value.updatePage(index);
+      if (chapter.value) {
+        updateChapterReading(chapter.value.id, index === chapter.value.pages.length, pageIdToGo);
+        goToRef.value.updatePage(index);
+      }
     };
 
     const updatePagination = (index: number) => {
-      const pageToGo = chapter.value.pages[index - 1];
-      updatePage(pageToGo.id, index);
+      if (chapter.value) {
+        const pageToGo = chapter.value.pages[index - 1];
+        updatePage(pageToGo.id, index);
+      }
     };
 
     const reloadImage = () => {
@@ -211,7 +213,7 @@ export default defineComponent({
       }
     };
 
-    const isLastChapter: ComputedRef<boolean> = computed(
+    const isLastChapter = computed(
       () => chapter.value?.number === manga.value?.chapters?.length,
     );
 

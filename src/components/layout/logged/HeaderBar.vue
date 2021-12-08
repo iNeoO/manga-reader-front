@@ -88,15 +88,15 @@ import {
   ref,
 } from 'vue';
 
-import { useStore } from 'vuex';
 import { useRouter, useRoute } from 'vue-router';
 
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
+import { ApplicationMutationTypes, AuthMutationTypes } from '@/store/types/mutation.type';
 
 export default defineComponent({
   name: 'loggedHeaderBar',
   setup() {
-    const store = useStore(key);
+    const store = useStore();
     const router = useRouter();
     const route = useRoute();
 
@@ -105,7 +105,7 @@ export default defineComponent({
         return store.getters['applicationStore/isSidebarOpen'];
       },
       set(value: boolean) {
-        store.commit('applicationStore/SET_IS_SIDEBAR_OPEN', value);
+        store.commit(ApplicationMutationTypes.SET_IS_SIDEBAR_OPEN, value);
       },
     });
 
@@ -114,11 +114,11 @@ export default defineComponent({
         return store.getters['applicationStore/isDarkMode'];
       },
       set(value: boolean) {
-        store.commit('applicationStore/SET_IS_DARK_MODE', value);
+        store.commit(ApplicationMutationTypes.SET_IS_DARK_MODE, value);
       },
     });
 
-    const name = computed(() => store.getters['userStore/user'].username);
+    const name = computed(() => store.getters['userStore/user']?.username);
 
     const mangaName = computed(() => store.getters['mangaStore/manga']?.name);
 
@@ -140,7 +140,7 @@ export default defineComponent({
     };
 
     const logout = () => {
-      store.commit('authStore/SET_IS_LOGGED', false);
+      store.commit(AuthMutationTypes.SET_IS_LOGGED, false);
       Cookies.remove(process.env.VUE_APP_COOKIE_TOKEN_NAME);
       router.push({ name: 'login' });
     };

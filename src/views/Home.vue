@@ -22,18 +22,15 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
   ref,
   Ref,
   onMounted,
   onBeforeUnmount,
 } from 'vue';
 
-import { useStore } from 'vuex';
+import { useStore } from '@/store/index';
 
-import { key } from '@/store/index';
-
-import { Manga } from '@/types/manga.type';
+import { MangaActionTypes } from '@/store/types/action.type';
 
 import Item from '@/components/utils/Item.vue';
 
@@ -43,9 +40,9 @@ export default defineComponent({
     Item,
   },
   setup() {
-    const store = useStore(key);
+    const store = useStore();
 
-    const mangas: ComputedRef<Manga[]> = computed(() => store.getters['mangaStore/mangas']);
+    const mangas = computed(() => store.getters['mangaStore/mangas']);
 
     const items: Ref<Element | null> = ref(null);
 
@@ -88,7 +85,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await store.dispatch('mangaStore/getMangas');
+      await store.dispatch(MangaActionTypes.getMangas);
       if (items.value) {
         const config = { childList: true };
 

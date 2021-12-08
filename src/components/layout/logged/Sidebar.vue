@@ -38,24 +38,23 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
-
-import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
+import { ApplicationMutationTypes } from '@/store/types/mutation.type';
 
 export default defineComponent({
   name: 'loggedSidebar',
   setup() {
-    const store = useStore(key);
+    const store = useStore();
     const route = useRoute();
 
     const isSidebarOpen = computed({
-      get(): boolean {
+      get() {
         return store.getters['applicationStore/isSidebarOpen'];
       },
       set(value: boolean) {
-        store.commit('applicationStore/SET_IS_SIDEBAR_OPEN', value);
+        store.commit(ApplicationMutationTypes.SET_IS_SIDEBAR_OPEN, value);
       },
     });
 

@@ -23,7 +23,7 @@
           },
         }">
           <template #legend>
-            <div class="text-sm text-gray-400">Page: {{ page.number }} / {{ pages.length }}</div>
+            <div class="text-sm text-gray-400">Page: {{ page.number }} / {{ pages?.length }}</div>
           </template>
       </item>
     </div>
@@ -34,23 +34,17 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
   ref,
   Ref,
   onMounted,
   onBeforeUnmount,
 } from 'vue';
 
-import { useStore } from 'vuex';
-
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
 
 import Item from '@/components/utils/Item.vue';
 
 import { checkChapter } from '@/utils/dataGetter';
-
-import { MangaWithChapters } from '@/types/manga.type';
-import { ChapterFormated } from '@/types/chapter.type';
 
 export default defineComponent({
   name: 'Home',
@@ -68,14 +62,14 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const store = useStore(key);
+    const store = useStore();
 
-    const manga: ComputedRef<MangaWithChapters> = computed(() => store.getters['mangaStore/manga']);
-    const chapter: ComputedRef<ChapterFormated> = computed(() => store.getters['mangaStore/chapter']);
+    const manga = computed(() => store.getters['mangaStore/manga']);
+    const chapter = computed(() => store.getters['mangaStore/chapter']);
 
     const items: Ref<Element | null> = ref(null);
 
-    const pages = computed(() => chapter.value.pages);
+    const pages = computed(() => chapter.value?.pages);
 
     let intersectionObserver: IntersectionObserver;
     let mutationObserver: MutationObserver;
@@ -118,8 +112,8 @@ export default defineComponent({
     onMounted(async () => {
       await checkChapter(props.mangaName, parseInt(props.chapterNumber, 10));
 
-      if (chapter.value.lastPageReadId) {
-        const index = pages.value.findIndex((page) => page.id === chapter.value.lastPageReadId);
+      if (chapter.value?.lastPageReadId) {
+        const index = pages.value?.findIndex((page) => page.id === chapter.value?.lastPageReadId);
 
         const page = document.querySelector(`#page-${index}`);
         const main = document.querySelector('main');

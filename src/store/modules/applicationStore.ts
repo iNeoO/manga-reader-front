@@ -1,10 +1,24 @@
-export type State = {
-  isDarkMode: boolean;
-  isSidebarOpen: boolean;
-};
+import {
+  Store as VuexStore,
+  CommitOptions,
+  DispatchOptions,
+  MutationTree,
+  ActionTree,
+  GetterTree,
+  Module,
+} from 'vuex';
 
-const state = {
-  isDarkMode: localStorage.getItem(process.env.VUE_APP_STORAGE_DARK_THEME_KEY),
+import { ApplicationMutationTypes } from '@/store/types/mutation.type';
+
+import { RootState, ApplicationState } from '@/store/types/state.type';
+import {
+  ApplicationGetters,
+  ApplicationMutations,
+  ApplicationActions,
+} from '@/store/types/applicationStore.type';
+
+export const state = {
+  isDarkMode: !!localStorage.getItem(process.env.VUE_APP_STORAGE_DARK_THEME_KEY),
   isSidebarOpen: false,
 };
 
@@ -14,31 +28,49 @@ if (localStorage.getItem(process.env.VUE_APP_STORAGE_DARK_THEME_KEY)) {
   document.body.classList.remove('dark');
 }
 
-const actions = {};
+export const actions: ActionTree<ApplicationState, RootState> = {};
 
-const getters = {
-  isDarkMode: (state: State): boolean => state.isDarkMode,
-  isSidebarOpen: (state: State): boolean => state.isSidebarOpen,
+export const getters: GetterTree<ApplicationState, RootState> & ApplicationGetters = {
+  'applicationStore/isDarkMode': (state: ApplicationState): boolean => state.isDarkMode,
+  'applicationStore/isSidebarOpen': (state: ApplicationState): boolean => state.isSidebarOpen,
 };
 
-const mutations = {
-  SET_IS_DARK_MODE(state: State, isDarkMode: boolean): void {
-    if (isDarkMode) {
+export const mutations: MutationTree<ApplicationState> & ApplicationMutations = {
+  [ApplicationMutationTypes.SET_IS_DARK_MODE](state: ApplicationState, payload: boolean): void {
+    if (payload) {
       localStorage.setItem(process.env.VUE_APP_STORAGE_DARK_THEME_KEY, 'true');
       document.body.classList.add('dark');
     } else {
       localStorage.removeItem(process.env.VUE_APP_STORAGE_DARK_THEME_KEY);
       document.body.classList.remove('dark');
     }
-    state.isDarkMode = isDarkMode;
+    state.isDarkMode = payload;
   },
-  SET_IS_SIDEBAR_OPEN(state: State, isSidebarOpen: boolean): void {
-    state.isSidebarOpen = isSidebarOpen;
+  [ApplicationMutationTypes.SET_IS_SIDEBAR_OPEN](state: ApplicationState, payload: boolean): void {
+    state.isSidebarOpen = payload;
   },
 };
 
-export default {
-  namespaced: true,
+export type ApplicationStore<S = ApplicationState> = Omit<VuexStore<S>, 'getters' | 'commit' | 'dispatch'>
+  & {
+  commit<K extends keyof ApplicationMutations, P extends Parameters<ApplicationMutations[K]>[1]>(
+      key: K,
+      payload?: P,
+      options?: CommitOptions
+    ): ReturnType<ApplicationMutations[K]>;
+  } & {
+  dispatch<K extends keyof ApplicationActions>(
+      key: K,
+      payload?: Parameters<ApplicationActions[K]>[1],
+      options?: DispatchOptions
+    ): ReturnType<ApplicationActions[K]>;
+  } & {
+    getters: {
+      [K in keyof ApplicationGetters]: ReturnType<ApplicationGetters[K]>
+    };
+  };
+
+export const store: Module<ApplicationState, RootState> = {
   state,
   getters,
   actions,

@@ -1,4 +1,13 @@
 export type ChapterRead = {
+  isRead: boolean;
+  userId: string;
+  chapterId: string;
+  lastPageReadId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type ChapterReadFormated = {
   chapterId: string;
   isRead: boolean;
   createdAt: string;
@@ -18,4 +27,10 @@ export type ChapterRead = {
     id: string;
     name: string;
   };
+};
+
+export type PostChapterReadPayload = {
+  chapterId: string;
+  isRead: boolean;
+  lastPageReadId: string;
 };

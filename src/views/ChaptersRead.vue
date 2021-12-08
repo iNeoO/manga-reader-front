@@ -64,7 +64,8 @@
         </td>
         <td class="py-3 px-6 text-left whitespace-nowrap">
           <button class="w-4 focus:outline-none hover:text-indigo-500
-            dark:hover:text-indigo-500 transform hover:scale-150">
+            dark:hover:text-indigo-500 transform hover:scale-150"
+            @click="deleteChapterRead(chapterRead.chapter.id)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <!-- eslint-disable-next-line max-len -->
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -80,20 +81,17 @@
 import {
   defineComponent,
   computed,
-  ComputedRef,
 } from 'vue';
 
-import { useStore } from 'vuex';
-
-import { key } from '@/store/index';
-import { ChapterRead } from '@/types/chapterRead.type';
+import { useStore } from '@/store/index';
+import { MangaActionTypes } from '@/store/types/action.type';
 
 export default defineComponent({
   name: 'chaptersRead',
   setup() {
-    const store = useStore(key);
+    const store = useStore();
 
-    const chaptersRead: ComputedRef<ChapterRead[]> = computed(() => store.getters['mangaStore/chaptersRead']);
+    const chaptersRead = computed(() => store.getters['mangaStore/chaptersRead']);
 
     const headers = [
       'Manga',
@@ -105,7 +103,7 @@ export default defineComponent({
       'edit',
     ];
 
-    store.dispatch('mangaStore/getChaptersRead');
+    store.dispatch(MangaActionTypes.getChaptersRead);
 
     const formatDate = (date: Date | string): string => {
       const d = new Date(date);
@@ -118,10 +116,16 @@ export default defineComponent({
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     };
 
+    const deleteChapterRead = async (chapterId: string) => {
+      await store.dispatch(MangaActionTypes.deleteChapterReading, chapterId);
+      await store.dispatch(MangaActionTypes.getChaptersRead);
+    };
+
     return {
       chaptersRead,
       headers,
       formatDate,
+      deleteChapterRead,
     };
   },
 });

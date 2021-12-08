@@ -1,23 +1,27 @@
 import {
-  InjectionKey,
-} from 'vue';
-import { createStore, Store } from 'vuex';
+  createStore,
+} from 'vuex';
+import { store as applicationStore, ApplicationStore } from '@/store/modules/applicationStore';
+import { store as authStore, AuthStore } from '@/store/modules/authStore';
+import { store as mangaStore, MangaStore } from '@/store/modules/mangaStore';
+import { store as userStore, UserStore } from '@/store/modules/userStore';
 
-import stores from '@/store/modules/index';
-import { State as ApplicationStoreState } from '@/store/modules/applicationStore';
-import { State as AuthStoreState } from '@/store/modules/authStore';
-import { State as MangaStoreState } from '@/store/modules/mangaStore';
-import { State as UserStoreState } from '@/store/modules/userStore';
+import { RootState } from '@/store/types/state.type';
 
-export interface State {
-  applicationStore: ApplicationStoreState,
-  authStore: AuthStoreState,
-  mangaStore: MangaStoreState,
-  userStore: UserStoreState,
-}
+export type Store = ApplicationStore<Pick<RootState, 'applicationStore'>>
+  & AuthStore<Pick<RootState, 'authStore'>>
+  & MangaStore<Pick<RootState, 'mangaStore'>>
+  & UserStore<Pick<RootState, 'userStore'>>;
 
-export const key: InjectionKey<Store<State>> = Symbol('store');
-
-export const store = createStore<State>({
-  modules: stores,
+export const store = createStore({
+  modules: {
+    applicationStore,
+    authStore,
+    mangaStore,
+    userStore,
+  },
 });
+
+export function useStore(): Store {
+  return store as Store;
+}

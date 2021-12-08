@@ -75,12 +75,13 @@ import {
   computed,
   ComputedRef,
 } from 'vue';
-import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
 
 import Alert from '@/components/utils/Alert.vue';
+
+import { AuthActionTypes, UserActionTypes } from '@/store/types/action.type';
 
 export default defineComponent({
   name: 'login',
@@ -88,7 +89,8 @@ export default defineComponent({
     Alert,
   },
   setup() {
-    const store = useStore(key);
+    const store = useStore();
+
     const router = useRouter();
 
     const email: Ref<string> = ref('');
@@ -99,8 +101,10 @@ export default defineComponent({
 
     const loginClick = async () => {
       try {
-        await store.dispatch('authStore/login', { email: email.value, password: password.value });
-        await store.dispatch('userStore/getUser');
+        await store.dispatch(AuthActionTypes.login, {
+          email: email.value, password: password.value,
+        });
+        await store.dispatch(UserActionTypes.getUser);
         isWrongLogsDisplayed.value = false;
         router.push({ name: 'home' });
       } catch (error) {

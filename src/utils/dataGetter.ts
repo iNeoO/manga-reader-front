@@ -1,27 +1,30 @@
 import { AxiosError } from 'axios';
 
-import { store } from '@/store';
+import { useStore } from '@/store';
 import router from '@/router';
 
-import { Manga, MangaWithChapters } from '@/types/manga.type';
-import { ChapterFormated } from '@/types/chapter.type';
+import { MangaActionTypes } from '@/store/types/action.type';
 import { Page } from '@/types/page.type';
+import { ChapterFormated } from '@/types/chapter.type';
+import { Manga, MangaWithChapters } from '@/types/manga.type';
+
+const store = useStore();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isAxiosError = (candidate: any): candidate is AxiosError => candidate.isAxiosError === true;
 
 export const checkMangas = async (): Promise<Manga[]> => {
-  const mangas: Manga[] = store.getters['mangaStore/mangas'];
+  const mangas = store.getters['mangaStore/mangas'];
   if (!mangas.length) {
-    return store.dispatch('mangaStore/getMangas');
+    return store.dispatch(MangaActionTypes.getMangas);
   }
   return mangas;
 };
 
 export const checkManga = async (mangaName: string): Promise<MangaWithChapters> => {
-  const mangas: Manga[] = await checkMangas();
+  const mangas = await checkMangas();
 
-  const manga: MangaWithChapters = store.getters['mangaStore/manga'];
+  const manga = store.getters['mangaStore/manga'];
 
   if (manga?.id && manga?.name === mangaName) {
     return manga;
@@ -37,7 +40,7 @@ export const checkManga = async (mangaName: string): Promise<MangaWithChapters> 
   }
 
   try {
-    return store.dispatch('mangaStore/getManga', mangaId);
+    return store.dispatch(MangaActionTypes.getManga, mangaId);
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 404) {
       router.push({ name: 'home' });
@@ -52,9 +55,9 @@ export const checkChapter = async (
   mangaName: string,
   chapterNumber: number,
 ): Promise<ChapterFormated> => {
-  const manga: MangaWithChapters = await checkManga(mangaName);
+  const manga = await checkManga(mangaName);
 
-  const chapter: ChapterFormated = store.getters['mangaStore/chapter'];
+  const chapter = store.getters['mangaStore/chapter'];
 
   if (chapter?.id && chapter?.number === chapterNumber) {
     return chapter;
@@ -70,7 +73,7 @@ export const checkChapter = async (
   }
 
   try {
-    return store.dispatch('mangaStore/getChapter', chapterId);
+    return store.dispatch(MangaActionTypes.getChapter, chapterId);
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 404) {
       router.push({ name: 'manga', params: { mangaName } });
@@ -86,7 +89,7 @@ export const checkPage = async (
   chapterNumber: number,
   pageNumber: number,
 ): Promise<Page> => {
-  const chapter: ChapterFormated = await checkChapter(mangaName, chapterNumber);
+  const chapter = await checkChapter(mangaName, chapterNumber);
 
   const page = chapter.pages.find(
     (c) => c.number === pageNumber,

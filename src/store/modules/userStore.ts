@@ -1,91 +1,79 @@
-import { Commit } from 'vuex';
+import {
+  Store as VuexStore,
+  CommitOptions,
+  DispatchOptions,
+  MutationTree,
+  ActionTree,
+  GetterTree,
+  Module,
+} from 'vuex';
 import axios from '@/plugins/axios';
+
 import { User } from '@/types/user.type';
+import { UserMutationTypes } from '../types/mutation.type';
+import { UserActionTypes } from '@/store/types/action.type';
+import { RootState, UserState } from '@/store/types/state.type';
+import {
+  AugmentedActionContext,
+  UserGetters,
+  UserActions,
+  UserMutations,
+} from '@/store/types/userStore.type';
 
-export type State = {
-  user: User;
-  isUserLoading: boolean;
-  isPatchPageHistory: boolean;
-  isResetPageHistory: boolean;
-};
-
-const state = {
-  user: {},
+export const state = {
+  user: null,
   isUserLoading: false,
-  isPatchPageHistory: false,
-  isResetPageHistory: false,
 };
 
-const actions = {
-  async getUser(
-    { commit }: { commit: Commit },
-  ): Promise<User> {
-    commit('SET_IS_USER_LOADING', true);
+export const actions: ActionTree<UserState, RootState> & UserActions = {
+  [UserActionTypes.getUser]: async ({ commit }: AugmentedActionContext) => {
+    commit(UserMutationTypes.SET_IS_USER_LOADING, true);
     try {
       const { data } = await axios.get('user/');
-      commit('SET_USER', data);
-      commit('SET_IS_USER_LOADING', false);
+      commit(UserMutationTypes.SET_USER, data);
+      commit(UserMutationTypes.SET_IS_USER_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_USER_LOADING', false);
-      throw error;
-    }
-  },
-  async patchPageHistory(
-    { commit }: { commit: Commit },
-    params: { [key: string]: string },
-  ): Promise<User> {
-    commit('SET_IS_PATCH_PAGE_HISTORY_LOADING', true);
-    try {
-      const { data } = await axios.patch('user/page-history/', { params });
-      commit('SET_USER', data);
-      commit('SET_IS_PATCH_PAGE_HISTORY_LOADING', false);
-      return data;
-    } catch (error) {
-      commit('SET_IS_PATCH_PAGE_HISTORY_LOADING', false);
-      throw error;
-    }
-  },
-  async deletePageHistory(
-    { commit }: { commit: Commit },
-  ): Promise<User> {
-    commit('SET_IS_RESET_PAGE_HISTORY_LOADING', true);
-    try {
-      const { data } = await axios.post('user/reset-page-history/');
-      commit('SET_USER', data);
-      commit('SET_IS_RESET_PAGE_HISTORY_LOADING', false);
-      return data;
-    } catch (error) {
-      commit('SET_IS_RESET_PAGE_HISTORY_LOADING', false);
+      commit(UserMutationTypes.SET_IS_USER_LOADING, false);
       throw error;
     }
   },
 };
 
-const getters = {
-  user: (state: State): User => state.user,
-  isUserLoading: (state: State): boolean => state.isUserLoading,
-  isPatchPageHistory: (state: State): boolean => state.isPatchPageHistory,
-  isResetPageHistory: (state: State): boolean => state.isResetPageHistory,
+export const getters: GetterTree<UserState, RootState> & UserGetters = {
+  'userStore/user': (state: UserState): User | null => state.user,
+  'userStore/isUserLoading': (state: UserState): boolean => state.isUserLoading,
 };
 
-const mutations = {
-  SET_USER(state: State, user: User): void {
-    state.user = user;
+export const mutations: MutationTree<UserState> & UserMutations = {
+  [UserMutationTypes.SET_USER](state: UserState, payload: User): void {
+    state.user = payload;
   },
-  SET_IS_USER_LOADING(state: State, isUserLoading: boolean): void {
-    state.isUserLoading = isUserLoading;
-  },
-  SET_IS_PATCH_PAGE_HISTORY_LOADING(state: State, isPatchPageHistory: boolean): void {
-    state.isPatchPageHistory = isPatchPageHistory;
-  },
-  SET_IS_RESET_PAGE_HISTORY_LOADING(state: State, isResetPageHistory: boolean): void {
-    state.isResetPageHistory = isResetPageHistory;
+  [UserMutationTypes.SET_IS_USER_LOADING](state: UserState, payload: boolean): void {
+    state.isUserLoading = payload;
   },
 };
 
-export default {
-  namespaced: true,
+export type UserStore<S = UserState> = Omit<VuexStore<S>, 'getters' | 'commit' | 'dispatch'>
+  & {
+  commit<K extends keyof UserMutations, P extends Parameters<UserMutations[K]>[1]>(
+      key: K,
+      payload?: P,
+      options?: CommitOptions
+    ): ReturnType<UserMutations[K]>;
+  } & {
+  dispatch<K extends keyof UserActions>(
+      key: K,
+      payload?: Parameters<UserActions[K]>[1],
+      options?: DispatchOptions
+    ): ReturnType<UserActions[K]>;
+  } & {
+    getters: {
+      [K in keyof UserGetters]: ReturnType<UserGetters[K]>
+    };
+  };
+
+export const store: Module<UserState, RootState> = {
   state,
   getters,
   actions,

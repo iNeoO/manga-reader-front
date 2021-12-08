@@ -23,8 +23,8 @@ import {
   computed,
 } from 'vue';
 
-import { useStore } from 'vuex';
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
+import { ApplicationMutationTypes } from '@/store/types/mutation.type';
 
 import Sidebar from '@/components/layout/logged/Sidebar.vue';
 import HeaderBar from '@/components/layout/logged/HeaderBar.vue';
@@ -38,14 +38,14 @@ export default defineComponent({
     TopButton,
   },
   setup() {
-    const store = useStore(key);
+    const store = useStore();
 
     const isSidebarOpen = computed({
       get(): boolean {
         return store.getters['applicationStore/isSidebarOpen'];
       },
       set(value: boolean) {
-        store.commit('applicationStore/SET_IS_SIDEBAR_OPEN', value);
+        store.commit(ApplicationMutationTypes.SET_IS_SIDEBAR_OPEN, value);
       },
     });
 

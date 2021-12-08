@@ -1,24 +1,30 @@
-import { Commit } from 'vuex';
-
+import {
+  Store as VuexStore,
+  CommitOptions,
+  DispatchOptions,
+  MutationTree,
+  ActionTree,
+  GetterTree,
+  Module,
+} from 'vuex';
 import axios from '@/plugins/axios';
+
 import { Manga, MangaWithChapters } from '@/types/manga.type';
 import { ChapterFormated } from '@/types/chapter.type';
-import { ChapterRead } from '@/types/chapterRead.type';
+import { ChapterRead, ChapterReadFormated, PostChapterReadPayload } from '@/types/chapterRead.type';
 
-export type State = {
-  mangas: Manga[];
-  isMangasLoading: boolean,
-  manga: MangaWithChapters;
-  isMangaLoading: boolean;
-  chapter: ChapterFormated;
-  isChapterLoading: boolean
-  chaptersRead: ChapterRead[],
-  isChaptersReadLoading: boolean,
-  isPostChapterReadLoading: boolean,
-  isDeleteChapterReadLoading: boolean,
-};
+import { MangaMutationTypes } from '../types/mutation.type';
+import { MangaActionTypes } from '@/store/types/action.type';
 
-const state = {
+import { RootState, MangaState } from '@/store/types/state.type';
+import {
+  AugmentedActionContext,
+  MangaGetters,
+  MangaActions,
+  MangaMutations,
+} from '@/store/types/mangaStore.type';
+
+export const state = {
   mangas: [],
   isMangasLoading: false,
   manga: null,
@@ -31,146 +37,164 @@ const state = {
   isDeleteChapterReadLoading: false,
 };
 
-const actions = {
-  async getMangas(
-    { commit }: { commit: Commit },
-  ): Promise<Manga[]> {
-    commit('SET_IS_MANGAS_LOADING', true);
+export const actions: ActionTree<MangaState, RootState> & MangaActions = {
+  [MangaActionTypes.getMangas]: async (
+    { commit }: AugmentedActionContext,
+  ): Promise<Manga[]> => {
+    commit(MangaMutationTypes.SET_IS_MANGAS_LOADING, true);
     try {
       const { data }: { data: Manga[] } = await axios.get('mangas/');
-      commit('SET_MANGAS', data);
-      commit('SET_IS_MANGAS_LOADING', false);
+      commit(MangaMutationTypes.SET_MANGAS, data);
+      commit(MangaMutationTypes.SET_IS_MANGAS_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_MANGAS_LOADING', false);
+      commit(MangaMutationTypes.SET_IS_MANGAS_LOADING, false);
       throw error;
     }
   },
-  async getManga(
-    { commit }: { commit: Commit },
-    id: string,
-  ): Promise<MangaWithChapters> {
-    commit('SET_IS_MANGA_LOADING', true);
+  [MangaActionTypes.getManga]: async (
+    { commit }: AugmentedActionContext,
+    payload: string,
+  ): Promise<MangaWithChapters> => {
+    commit(MangaMutationTypes.SET_IS_MANGAS_LOADING, true);
     try {
-      const { data }: { data: MangaWithChapters } = await axios.get(`mangas/${id}`);
-      commit('SET_MANGA', data);
-      commit('SET_IS_MANGA_LOADING', false);
+      const { data }: { data: MangaWithChapters } = await axios.get(`mangas/${payload}`);
+      commit(MangaMutationTypes.SET_MANGA, data);
+      commit(MangaMutationTypes.SET_IS_MANGA_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_MANGA_LOADING', false);
+      commit(MangaMutationTypes.SET_IS_MANGA_LOADING, false);
       throw error;
     }
   },
-  async getChapter(
-    { commit }: { commit: Commit },
-    id: string,
-  ): Promise<ChapterFormated> {
-    commit('SET_IS_CHAPTER_LOADING', true);
+  [MangaActionTypes.getChapter]: async (
+    { commit }: AugmentedActionContext,
+    payload: string,
+  ): Promise<ChapterFormated> => {
+    commit(MangaMutationTypes.SET_IS_CHAPTER_LOADING, true);
     try {
-      const { data }: { data: ChapterFormated } = await axios.get(`chapters/${id}`);
-      commit('SET_CHAPTER', data);
-      commit('SET_IS_CHAPTER_LOADING', false);
+      const { data }: { data: ChapterFormated } = await axios.get(`chapters/${payload}`);
+      commit(MangaMutationTypes.SET_CHAPTER, data);
+      commit(MangaMutationTypes.SET_IS_CHAPTER_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_CHAPTER_LOADING', false);
+      commit(MangaMutationTypes.SET_IS_CHAPTER_LOADING, false);
       throw error;
     }
   },
-  async postChapterReading(
-    { commit }: { commit: Commit }, params: {
-      chapterId: string, isRead: boolean, lastPageReadId: string,
-    },
-  ): Promise<ChapterFormated> {
-    commit('SET_IS_POST_CHAPTER_READ_LOADING', true);
+  [MangaActionTypes.postChapterReading]: async (
+    { commit }: AugmentedActionContext,
+    payload: PostChapterReadPayload,
+  ): Promise<ChapterFormated> => {
+    commit(MangaMutationTypes.SET_IS_POST_CHAPTER_READ_LOADING, true);
     try {
-      const { data }: { data: ChapterFormated } = await axios.post('chapters-read/', params);
-      commit('SET_CHAPTER', data);
-      commit('SET_IS_POST_CHAPTER_READ_LOADING', false);
+      const { data }: { data: ChapterFormated } = await axios.post('chapters-read/', payload);
+      commit(MangaMutationTypes.SET_CHAPTER, data);
+      commit(MangaMutationTypes.SET_IS_POST_CHAPTER_READ_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_POST_CHAPTER_READ_LOADING', true);
+      commit(MangaMutationTypes.SET_IS_POST_CHAPTER_READ_LOADING, false);
       throw error;
     }
   },
-  async getChaptersRead(
-    { commit }: { commit: Commit },
-  ): Promise<ChapterRead[]> {
-    commit('SET_IS_CHAPTERS_READ_LOADING', true);
+  [MangaActionTypes.getChaptersRead]: async (
+    { commit }: AugmentedActionContext,
+  ): Promise<ChapterReadFormated[]> => {
+    commit(MangaMutationTypes.SET_IS_CHAPTERS_READ_LOADING, true);
     try {
-      const { data }: { data: ChapterRead[] } = await axios.get('chapters-read/');
-      commit('SET_CHAPTERS_READ', data);
-      commit('SET_IS_CHAPTERS_READ_LOADING', false);
+      const { data }: { data: ChapterReadFormated[] } = await axios.get('chapters-read/');
+      commit(MangaMutationTypes.SET_CHAPTERS_READ, data);
+      commit(MangaMutationTypes.SET_IS_CHAPTERS_READ_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_CHAPTERS_READ_LOADING', false);
+      commit(MangaMutationTypes.SET_IS_CHAPTERS_READ_LOADING, false);
       throw error;
     }
   },
-  async deleteChapterReading(
-    { commit }: { commit: Commit },
-    id: string,
-  ): Promise<ChapterFormated> {
-    commit('SET_IS_DELETE_CHAPTER_READ_LOADING', true);
+  [MangaActionTypes.deleteChapterReading]: async (
+    { commit }: AugmentedActionContext,
+    payload: string,
+  ): Promise<ChapterRead> => {
+    commit(MangaMutationTypes.SET_IS_DELETE_CHAPTER_READ_LOADING, true);
     try {
-      const { data } = await axios.delete('chapters-read/', { params: { id } });
-      commit('SET_CHAPTER', data);
-      commit('SET_IS_DELETE_CHAPTER_READ_LOADING', false);
+      const { data }: { data: ChapterRead } = await axios.delete(`chapters-read/${payload}`);
+      commit(MangaMutationTypes.SET_IS_DELETE_CHAPTER_READ_LOADING, false);
       return data;
     } catch (error) {
-      commit('SET_IS_DELETE_CHAPTER_READ_LOADING', true);
+      commit(MangaMutationTypes.SET_IS_DELETE_CHAPTER_READ_LOADING, false);
       throw error;
     }
   },
 };
 
-const getters = {
-  mangas: (state: State): Manga[] => state.mangas,
-  isMangasLoading: (state: State): boolean => state.isMangasLoading,
-  manga: (state: State): MangaWithChapters => state.manga,
-  isMangaLoading: (state: State): boolean => state.isMangaLoading,
-  chapter: (state: State): ChapterFormated => state.chapter,
-  isChapterLoading: (state: State): boolean => state.isChapterLoading,
-  chaptersRead: (state: State): ChapterRead[] => state.chaptersRead,
-  isChaptersReadLoading: (state: State): boolean => state.isChaptersReadLoading,
-  isPostChapterReadLoading: (state: State): boolean => state.isPostChapterReadLoading,
-  isDeleteChapterReadLoading: (state: State): boolean => state.isDeleteChapterReadLoading,
+export const getters: GetterTree<MangaState, RootState> & MangaGetters = {
+  'mangaStore/mangas': (state: MangaState): Manga[] => state.mangas,
+  'mangaStore/isMangasLoading': (state: MangaState): boolean => state.isMangasLoading,
+  'mangaStore/manga': (state: MangaState): MangaWithChapters | null => state.manga,
+  'mangaStore/isMangaLoading': (state: MangaState): boolean => state.isMangaLoading,
+  'mangaStore/chapter': (state: MangaState): ChapterFormated | null => state.chapter,
+  'mangaStore/isChapterLoading': (state: MangaState): boolean => state.isChapterLoading,
+  'mangaStore/chaptersRead': (state: MangaState): ChapterReadFormated[] => state.chaptersRead,
+  'mangaStore/isChaptersReadLoading': (state: MangaState): boolean => state.isChaptersReadLoading,
+  'mangaStore/isPostChapterReadLoading': (state: MangaState): boolean => state.isPostChapterReadLoading,
+  'mangaStore/isDeleteChapterReadLoading': (state: MangaState): boolean => state.isDeleteChapterReadLoading,
 };
 
-const mutations = {
-  SET_MANGAS(state: State, mangas: Manga[]): void {
-    state.mangas = mangas;
+export const mutations: MutationTree<MangaState > & MangaMutations = {
+  [MangaMutationTypes.SET_MANGAS](state: MangaState, payload: Manga[]): void {
+    state.mangas = payload;
   },
-  SET_IS_MANGAS_LOADING(state: State, isMangasLoading: boolean): void {
-    state.isMangasLoading = isMangasLoading;
+  [MangaMutationTypes.SET_IS_MANGAS_LOADING](state: MangaState, payload: boolean): void {
+    state.isMangasLoading = payload;
   },
-  SET_MANGA(state: State, manga: MangaWithChapters): void {
-    state.manga = manga;
+  [MangaMutationTypes.SET_MANGA](state: MangaState, payload: MangaWithChapters): void {
+    state.manga = payload;
   },
-  SET_IS_MANGA_LOADING(state: State, isMangaLoading: boolean): void {
-    state.isMangaLoading = isMangaLoading;
+  [MangaMutationTypes.SET_IS_MANGA_LOADING](state: MangaState, payload: boolean): void {
+    state.isMangaLoading = payload;
   },
-  SET_CHAPTER(state: State, chapter: ChapterFormated): void {
-    state.chapter = chapter;
+  [MangaMutationTypes.SET_CHAPTER](state: MangaState, payload: ChapterFormated): void {
+    state.chapter = payload;
   },
-  SET_IS_CHAPTER_LOADING(state: State, isChapterLoading: boolean): void {
-    state.isChapterLoading = isChapterLoading;
+  [MangaMutationTypes.SET_IS_CHAPTER_LOADING](state: MangaState, payload: boolean): void {
+    state.isChapterLoading = payload;
   },
-  SET_CHAPTERS_READ(state: State, chaptersRead: ChapterRead[]): void {
-    state.chaptersRead = chaptersRead;
+  [MangaMutationTypes.SET_CHAPTERS_READ](state: MangaState, payload: ChapterReadFormated[]): void {
+    state.chaptersRead = payload;
   },
-  SET_IS_CHAPTERS_READ_LOADING(state: State, isChaptersReadLoading: boolean): void {
-    state.isChaptersReadLoading = isChaptersReadLoading;
+  [MangaMutationTypes.SET_IS_CHAPTERS_READ_LOADING](state: MangaState, payload: boolean): void {
+    state.isChaptersReadLoading = payload;
   },
-  SET_IS_POST_CHAPTER_READ_LOADING(state: State, isPostChapterReadLoading: boolean): void {
-    state.isPostChapterReadLoading = isPostChapterReadLoading;
+  [MangaMutationTypes.SET_IS_POST_CHAPTER_READ_LOADING](state: MangaState, payload: boolean): void {
+    state.isPostChapterReadLoading = payload;
   },
-  SET_IS_DELETE_CHAPTER_READ_LOADING(state: State, isDeleteChapterReadLoading: boolean): void {
-    state.isDeleteChapterReadLoading = isDeleteChapterReadLoading;
+  [
+  MangaMutationTypes.SET_IS_DELETE_CHAPTER_READ_LOADING
+  ](state: MangaState, payload: boolean): void {
+    state.isDeleteChapterReadLoading = payload;
   },
 };
 
-export default {
-  namespaced: true,
+export type MangaStore<S = MangaState> = Omit<VuexStore<S>, 'getters' | 'commit' | 'dispatch'>
+  & {
+  commit<K extends keyof MangaMutations, P extends Parameters<MangaMutations[K]>[1]>(
+      key: K,
+      payload?: P,
+      options?: CommitOptions
+    ): ReturnType<MangaMutations[K]>;
+  } & {
+  dispatch<K extends keyof MangaActions>(
+      key: K,
+      payload?: Parameters<MangaActions[K]>[1],
+      options?: DispatchOptions
+    ): ReturnType<MangaActions[K]>;
+  } & {
+    getters: {
+      [K in keyof MangaGetters]: ReturnType<MangaGetters[K]>
+    };
+  };
+
+export const store: Module<MangaState, RootState> = {
   state,
   getters,
   actions,

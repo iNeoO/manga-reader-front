@@ -14,10 +14,12 @@
         :name="chapter.name"
         :image-id="chapter.coverPageId"
         :is-read="chapter.isRead"
-        :to="{ name: 'chapter', params: { mangaName: manga.name, chapterNumber: chapter.number } }">
+        :to="{
+          name: 'chapter',
+          params: { mangaName: manga.name, chapterNumber: `${chapter.number}` } }">
         <template #legend>
           <span class="text-sm text-gray-400">
-            Number of pages read: {{ chapter.countPagesRead }} / {{ chapter.count }}
+            Number of pages read: {{ chapter.countPagesRead }} / {{ chapter.pages?.length }}
           </span>
         </template>
       </item>
@@ -35,15 +37,11 @@ import {
   onBeforeUnmount,
 } from 'vue';
 
-import { useStore } from 'vuex';
-
-import { key } from '@/store/index';
+import { useStore } from '@/store/index';
 
 import Item from '@/components/utils/Item.vue';
 
 import { checkManga } from '@/utils/dataGetter';
-
-import { ChapterFormated } from '@/types/chapter.type';
 
 export default defineComponent({
   name: 'Manga',
@@ -57,11 +55,11 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const store = useStore(key);
+    const store = useStore();
 
     const manga = computed(() => store.getters['mangaStore/manga']);
 
-    const chapters = computed(() => manga.value.chapters);
+    const chapters = computed(() => manga.value?.chapters);
 
     const items: Ref<Element | null> = ref(null);
 
@@ -106,21 +104,23 @@ export default defineComponent({
     onMounted(async () => {
       await checkManga(props.mangaName);
 
-      const indexFound = [...chapters.value].reverse().findIndex(
-        ((chapter: ChapterFormated) => chapter.isRead),
-      );
+      if (chapters.value) {
+        const indexFound = [...chapters.value].reverse().findIndex(
+          ((chapter) => chapter.isRead),
+        );
 
-      const index = indexFound !== -1 ? indexFound : chapters.value.length - 1;
+        const index = indexFound !== -1 ? indexFound : chapters.value.length - 1;
 
-      const chapter = document.querySelector(`#chapter-${index}`);
-      const main = document.querySelector('main');
+        const chapter = document.querySelector(`#chapter-${index}`);
+        const main = document.querySelector('main');
 
-      if (main && chapter) {
-        const { top } = chapter.getBoundingClientRect();
-        main.scrollTo({
-          top,
-          behavior: 'auto',
-        });
+        if (main && chapter) {
+          const { top } = chapter.getBoundingClientRect();
+          main.scrollTo({
+            top,
+            behavior: 'auto',
+          });
+        }
       }
 
       if (items.value) {

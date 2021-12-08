@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import App from './App.vue';
 import './registerServiceWorker';
 import router from './router';
-import { store, key } from './store';
+import { store } from './store';
 
 import './index.css';
 
@@ -13,19 +13,19 @@ import './index.css';
       await store.dispatch('userStore/getUser');
       store.commit('authStore/SET_IS_LOGGED', true);
       createApp(App)
-        .use(store, key)
+        .use(store)
         .use(router)
         .mount('#app');
     } catch (error) {
       store.commit('authStore/SET_IS_LOGGED', false);
       createApp(App)
-        .use(store, key)
+        .use(store)
         .use(router)
         .mount('#app');
     }
   } else {
     createApp(App)
-      .use(store, key)
+      .use(store)
       .use(router)
       .mount('#app');
   }
