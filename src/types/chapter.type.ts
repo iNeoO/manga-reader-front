@@ -13,6 +13,7 @@ export type ChapterWithPages = Chapter & {
 
 export type ChapterFormated = ChapterWithPages & {
   isRead: boolean;
+  count: number;
   lastPageReadId: string;
   countPagesRead?: number;
 };

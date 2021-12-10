@@ -59,7 +59,8 @@ export const checkChapter = async (
 
   const chapter = store.getters['mangaStore/chapter'];
 
-  if (chapter?.id && chapter?.number === chapterNumber) {
+  if (chapter?.id && chapter?.number === chapterNumber
+    && manga.chapters.find((c) => c.id === chapter.id)) {
     return chapter;
   }
 
