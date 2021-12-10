@@ -19,7 +19,7 @@
           params: { mangaName: manga.name, chapterNumber: `${chapter.number}` } }">
         <template #legend>
           <span class="text-sm text-gray-400">
-            Number of pages read: {{ chapter.countPagesRead }} / {{ chapter.pages?.length }}
+            Number of pages read: {{ chapter.countPagesRead }} / {{ chapter.countPagesRead }}
           </span>
         </template>
       </item>
