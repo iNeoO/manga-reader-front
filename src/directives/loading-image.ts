@@ -7,7 +7,7 @@ const loader = `
 
 const createNode = () => {
   const div = document.createElement('div');
-  div.setAttribute('data-name', 'mr-loader');
+  div.setAttribute('data-name', 'mr-loading-image');
   div.className = 'mr-loader';
   const svgLoader = new DOMParser().parseFromString(loader, 'application/xml');
   div.appendChild(
@@ -25,7 +25,7 @@ export default {
     }
   },
   updated(el: HTMLElement, binding: { value: boolean }): void {
-    const child = el.parentElement?.querySelector('[data-name=mr-loader]');
+    const child = el.parentElement?.querySelector('[data-name=mr-loading-image]');
     if (binding.value && !child && el.parentElement) {
       el.style.position = 'relative';
       const loaderNode = createNode();

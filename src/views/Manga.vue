@@ -1,6 +1,6 @@
 <template>
   <div v-if="manga">
-    <div class="flex justify-between mb-4">
+    <div class="flex justify-between mb-4 hidden sm:block">
       <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
         {{ manga.name }}
       </h2>

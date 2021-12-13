@@ -4,7 +4,8 @@ import App from '@/App.vue';
 import '@/registerServiceWorker';
 import router from '@/router';
 import { store } from '@/store';
-import loading from '@/directives/loading';
+import loadingImage from '@/directives/loading-image';
+import loadingError from '@/directives/loading-error';
 
 import './index.css';
 
@@ -16,21 +17,24 @@ import './index.css';
       createApp(App)
         .use(store)
         .use(router)
-        .directive('loading-image', loading)
+        .directive('loading-image', loadingImage)
+        .directive('loading-error', loadingError)
         .mount('#app');
     } catch (error) {
       store.commit('authStore/SET_IS_LOGGED', false);
       createApp(App)
         .use(store)
         .use(router)
-        .directive('loading-image', loading)
+        .directive('loading-image', loadingImage)
+        .directive('loading-error', loadingError)
         .mount('#app');
     }
   } else {
     createApp(App)
       .use(store)
       .use(router)
-      .directive('loading-image', loading)
+      .directive('loading-image', loadingImage)
+      .directive('loading-error', loadingError)
       .mount('#app');
   }
 })();

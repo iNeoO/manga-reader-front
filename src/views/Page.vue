@@ -12,14 +12,17 @@
           @click="goToNextChapter">
           <span>Go To next chapter</span>
         </div>
+        <span class="text-gray-700 dark:text-gray-300">
+          Nb Pages: {{ nbPages }}
+        </span>
       </div>
       <button
         @click="reloadImage"
         v-if="isError"
         class="inline-block text-gray-700 dark:text-gray-300
           hover:text-indigo-500
-          dark:hover:text-indigo-500
-          hover:animate-spin">
+          dark:hover:text-indigo-500"
+        :class="isLoading ? 'animate:spin' : ''" >
         <reload-icon />
       </button>
     </div>
@@ -27,6 +30,7 @@
       <img
         v-if="pageId"
         v-loading-image="isLoading"
+        v-loading-error="isError"
         id="page"
         class="image"
         :src="`/api/pages/${pageId}`"/>
@@ -40,11 +44,22 @@
         @click="goToNext" />
     </div>
     <div class="flex justify-between mt-4">
-      <pagination
-        :count="nbPages"
-        :page="pageIndex + 1"
-        :disabled="isLoading"
-        @page-change="updatePagination" />
+      <div class="flex">
+        <pagination
+          :count="nbPages"
+          :page="pageIndex + 1"
+          :disabled="isLoading"
+          @page-change="updatePagination" />
+        <button
+          v-if="isError || isLoading"
+          class="default-btn ml-4"
+          @click="resetStates">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <!-- eslint-disable-next-line max-len -->
+            <path d="M7.03 1.88c.252-1.01 1.688-1.01 1.94 0l2.905 11.62H14a.5.5 0 0 1 0 1H2a.5.5 0 0 1 0-1h2.125L7.03 1.88z"/>
+          </svg>
+        </button>
+      </div>
       <go-to
         v-if="isInited"
         ref="goToRef"
@@ -132,6 +147,7 @@ export default defineComponent({
       if (main) {
         main.scrollTo({
           left: 999,
+          top: 0,
           behavior: 'auto',
         });
       }
@@ -246,6 +262,11 @@ export default defineComponent({
       () => chapter.value?.number === manga.value?.chapters?.length,
     );
 
+    const resetStates = () => {
+      isLoading.value = false;
+      isError.value = false;
+    };
+
     const successHandler = () => {
       isLoading.value = false;
       isError.value = false;
@@ -299,6 +320,7 @@ export default defineComponent({
       goToNext,
       goToNextChapter,
       reloadImage,
+      resetStates,
       isLastChapter,
     };
   },
@@ -307,7 +329,7 @@ export default defineComponent({
 
 <style scoped>
 .image {
-  height: 700px;
+  height: 609px;
   max-width: fit-content;
 }
 /* md */
