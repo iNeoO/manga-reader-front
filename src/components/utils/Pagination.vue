@@ -45,6 +45,10 @@ export default defineComponent({
       required: true,
       type: Number,
     },
+    disabled: {
+      default: false,
+      type: Boolean,
+    },
   },
   emits: ['page-change'],
   setup(props, context) {
@@ -74,21 +78,27 @@ export default defineComponent({
           'dark:text-indigo-300': true,
           'z-10': true,
           'cursor-default': true,
+          'cursor-not-allowed': props.disabled,
         };
       }
       if (nb === '...') {
         return {
           'cursor-default': true,
+          'cursor-not-allowed': props.disabled,
         };
       }
       return {
         'cursor-pointer': true,
         'hover:bg-gray-50': true,
         'dark:hover:bg-gray-800': true,
+        'cursor-not-allowed': props.disabled,
       };
     };
 
     const paginationClick = (nb: number | string) => {
+      if (props.disabled) {
+        return;
+      }
       if (typeof nb === 'number'
         && nb > 0
         && nb < props.count + 1) {

@@ -1,9 +1,9 @@
 <template>
   <button @click="scrollToTop"
     v-show="isButtonVisible"
-    class="fixed z-10 p-3 bg-gray-100 rounded-full shadow-md
-      bottom-10 right-10 animate-bounce">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    class="fixed z-10 p-2 bg-gray-100 rounded-full shadow-md
+      bottom-10 right-5 animate-bounce">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <!-- eslint-disable-next-line max-len -->
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18">
         </path>
@@ -37,7 +37,7 @@ export default defineComponent({
         throw new Error(`Element ${props.windowSelector} not found !`);
       }
       const scrollHandler = () => {
-        isButtonVisible.value = element.scrollTop > 100;
+        isButtonVisible.value = element.scrollTop > 300;
       };
       element.addEventListener('scroll', scrollHandler);
 

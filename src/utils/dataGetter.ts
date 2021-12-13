@@ -24,12 +24,6 @@ export const checkMangas = async (): Promise<Manga[]> => {
 export const checkManga = async (mangaName: string): Promise<MangaWithChapters> => {
   const mangas = await checkMangas();
 
-  const manga = store.getters['mangaStore/manga'];
-
-  if (manga?.id && manga?.name === mangaName) {
-    return manga;
-  }
-
   const mangaId = mangas.find(
     (m) => m.name.toLowerCase() === mangaName.toLowerCase(),
   )?.id;
@@ -56,13 +50,6 @@ export const checkChapter = async (
   chapterNumber: number,
 ): Promise<ChapterFormated> => {
   const manga = await checkManga(mangaName);
-
-  const chapter = store.getters['mangaStore/chapter'];
-
-  if (chapter?.id && chapter?.number === chapterNumber
-    && manga.chapters.find((c) => c.id === chapter.id)) {
-    return chapter;
-  }
 
   const chapterId = manga.chapters.find(
     (c) => c.number === chapterNumber,

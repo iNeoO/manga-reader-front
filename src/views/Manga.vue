@@ -105,11 +105,16 @@ export default defineComponent({
       await checkManga(props.mangaName);
 
       if (chapters.value) {
-        const indexFound = [...chapters.value].reverse().findIndex(
+        const indexFound = chapters.value.findIndex(
           ((chapter) => chapter.isRead),
         );
 
-        const index = indexFound !== -1 ? indexFound : chapters.value.length - 1;
+        const index = (() => {
+          if (indexFound === -1) {
+            return chapters.value.length;
+          }
+          return indexFound === 0 ? indexFound : indexFound - 1;
+        })();
 
         const chapter = document.querySelector(`#chapter-${index}`);
         const main = document.querySelector('main');

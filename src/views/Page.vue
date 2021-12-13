@@ -2,25 +2,20 @@
   <div class="table mx-auto">
     <div class="flex justify-between mb-2">
       <div>
-        <router-link
+        <div
           v-if="!isLastChapter"
           class="text-gray-700 dark:text-gray-300
             underline
+            cursor-pointer
             hover:text-indigo-500
             dark:hover:text-indigo-500"
-          :to="{
-            name: 'page',
-            params: {
-              mangaName: mangaName,
-              chapterNumber: parseInt(chapterNumber, 10) + 1,
-              pageNumber: 1,
-            },
-          }">
+          @click="goToNextChapter">
           <span>Go To next chapter</span>
-        </router-link>
+        </div>
       </div>
       <button
         @click="reloadImage"
+        v-if="isError"
         class="inline-block text-gray-700 dark:text-gray-300
           hover:text-indigo-500
           dark:hover:text-indigo-500
@@ -29,26 +24,33 @@
       </button>
     </div>
     <div class="relative inline-block">
-      <img v-if="pageId" id="page" class="image" :src="`/api/pages/${pageId}`"/>
+      <img
+        v-if="pageId"
+        v-loading-image="isLoading"
+        id="page"
+        class="image"
+        :src="`/api/pages/${pageId}`"/>
       <button
         class="absolute inset-y-0 w-1/4 focus:outline-none"
-        :disabled="!previousPage"
+        :disabled="!previousPage || isLoading"
         @click="goToPrevious" />
       <button
         class="absolute inset-y-0 w-1/4 right-0 focus:outline-none"
-        :disabled="!nextPage"
+        :disabled="!nextPage || isLoading"
         @click="goToNext" />
     </div>
     <div class="flex justify-between mt-4">
       <pagination
         :count="nbPages"
         :page="pageIndex + 1"
+        :disabled="isLoading"
         @page-change="updatePagination" />
       <go-to
         v-if="isInited"
         ref="goToRef"
         :count="nbPages"
         :page="pageIndex + 1"
+        :disabled="isLoading"
         @page-change="updatePagination" />
     </div>
   </div>
@@ -59,7 +61,6 @@ import {
   defineComponent,
   computed,
   ref,
-  Ref,
   onMounted,
   onBeforeUnmount,
 } from 'vue';
@@ -103,7 +104,9 @@ export default defineComponent({
 
     const goToRef = ref();
 
-    const isInited: Ref<boolean> = ref(false);
+    const isInited = ref(false);
+    const isLoading = ref(true);
+    const isError = ref(false);
 
     const manga = computed(() => store.getters['mangaStore/manga']);
     const chapter = computed(() => store.getters['mangaStore/chapter']);
@@ -124,6 +127,14 @@ export default defineComponent({
     );
 
     const updateChapterReading = (chapterId: string, isRead: boolean, lastPageReadId: string) => {
+      isLoading.value = true;
+      const main = document.querySelector('main');
+      if (main) {
+        main.scrollTo({
+          left: 999,
+          behavior: 'auto',
+        });
+      }
       store.dispatch(MangaActionTypes.postChapterReading, {
         chapterId,
         isRead,
@@ -213,9 +224,37 @@ export default defineComponent({
       }
     };
 
+    const goToNextChapter = async () => {
+      await router.push({
+        name: 'page',
+        params: {
+          mangaName: props.mangaName,
+          chapterNumber: parseInt(props.chapterNumber, 10) + 1,
+          pageNumber: 1,
+        },
+      });
+      isInited.value = false;
+      await checkPage(
+        props.mangaName,
+        parseInt(props.chapterNumber, 10),
+        parseInt(props.pageNumber, 10),
+      );
+      isInited.value = true;
+    };
+
     const isLastChapter = computed(
       () => chapter.value?.number === manga.value?.chapters?.length,
     );
+
+    const successHandler = () => {
+      isLoading.value = false;
+      isError.value = false;
+    };
+
+    const errorHandler = () => {
+      isError.value = true;
+      isLoading.value = false;
+    };
 
     onMounted(async () => {
       await checkPage(
@@ -226,13 +265,25 @@ export default defineComponent({
       isInited.value = true;
 
       document.addEventListener('keyup', keyEventHandler);
+      const pageElement = document.getElementById('page');
+      if (pageElement) {
+        pageElement.addEventListener('load', successHandler);
+        pageElement.addEventListener('error', errorHandler);
+      }
     });
 
     onBeforeUnmount(() => {
       document.removeEventListener('keyup', keyEventHandler);
+      const pageElement = document.getElementById('page');
+      if (pageElement) {
+        pageElement.removeEventListener('load', successHandler);
+        pageElement.removeEventListener('error', errorHandler);
+      }
     });
 
     return {
+      isLoading,
+      isError,
       manga,
       chapter,
       page,
@@ -246,6 +297,7 @@ export default defineComponent({
       isInited,
       goToPrevious,
       goToNext,
+      goToNextChapter,
       reloadImage,
       isLastChapter,
     };
@@ -255,6 +307,14 @@ export default defineComponent({
 
 <style scoped>
 .image {
-  max-height: 1044px;
+  height: 700px;
+  max-width: fit-content;
+}
+/* md */
+@media (min-width:768px) {
+  .image {
+    height: 1044px;
+    max-width: 100%;
+  }
 }
 </style>

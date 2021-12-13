@@ -1,9 +1,10 @@
 import { createApp } from 'vue';
 import Cookies from 'js-cookie';
-import App from './App.vue';
-import './registerServiceWorker';
-import router from './router';
-import { store } from './store';
+import App from '@/App.vue';
+import '@/registerServiceWorker';
+import router from '@/router';
+import { store } from '@/store';
+import loading from '@/directives/loading';
 
 import './index.css';
 
@@ -15,18 +16,21 @@ import './index.css';
       createApp(App)
         .use(store)
         .use(router)
+        .directive('loading-image', loading)
         .mount('#app');
     } catch (error) {
       store.commit('authStore/SET_IS_LOGGED', false);
       createApp(App)
         .use(store)
         .use(router)
+        .directive('loading-image', loading)
         .mount('#app');
     }
   } else {
     createApp(App)
       .use(store)
       .use(router)
+      .directive('loading-image', loading)
       .mount('#app');
   }
 })();

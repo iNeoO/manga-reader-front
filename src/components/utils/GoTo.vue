@@ -6,6 +6,7 @@
       class="default-input input-max-width inline-block my-auto py-1.5 px-2 text-center text-xs"
       v-model.number="input"
       maxlength="3"
+      :disabled="disabled"
       @keyup.left.stop
       @keyup.right.stop
       @keyup.enter="updatePagination"
@@ -29,6 +30,10 @@ export default defineComponent({
     page: {
       required: true,
       type: Number,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['page-change'],

@@ -13,3 +13,16 @@
     @apply bg-white border-2 border-gray-300 p-6 rounded-md tracking-wide shadow-lg dark:bg-gray-900 dark:border-gray-600
   }
 }
+
+.mr-loader {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ccc;
+  opacity: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
