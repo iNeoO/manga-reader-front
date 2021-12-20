@@ -18,7 +18,7 @@
       </div>
       <button
         @click="reloadImage"
-        v-if="isError"
+        v-if="isLoading"
         class="inline-block text-gray-700 dark:text-gray-300
           hover:text-indigo-500
           dark:hover:text-indigo-500"
@@ -30,7 +30,6 @@
       <img
         v-if="pageId"
         v-loading-image="isLoading"
-        v-loading-error="isError"
         id="page"
         class="image"
         :src="`/api/pages/${pageId}`"/>
@@ -51,7 +50,7 @@
           :disabled="isLoading"
           @page-change="updatePagination" />
         <button
-          v-if="isError || isLoading"
+          v-if="isLoading"
           class="default-btn ml-4"
           @click="resetStates">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -120,8 +119,7 @@ export default defineComponent({
     const goToRef = ref();
 
     const isInited = ref(false);
-    const isLoading = ref(true);
-    const isError = ref(false);
+    const isLoading = ref(false);
 
     const manga = computed(() => store.getters['mangaStore/manga']);
     const chapter = computed(() => store.getters['mangaStore/chapter']);
@@ -264,16 +262,13 @@ export default defineComponent({
 
     const resetStates = () => {
       isLoading.value = false;
-      isError.value = false;
     };
 
     const successHandler = () => {
       isLoading.value = false;
-      isError.value = false;
     };
 
     const errorHandler = () => {
-      isError.value = true;
       isLoading.value = false;
     };
 
@@ -304,7 +299,6 @@ export default defineComponent({
 
     return {
       isLoading,
-      isError,
       manga,
       chapter,
       page,
@@ -329,13 +323,20 @@ export default defineComponent({
 
 <style scoped>
 .image {
-  height: 609px;
+  height: 603px;
   max-width: fit-content;
 }
-/* md */
+/* lg */
 @media (min-width:768px) {
   .image {
-    height: 1044px;
+    height: 760px;
+    max-width: 100%;
+  }
+}
+/* lg */
+@media (min-height:1280px) {
+  .image {
+    height: 1300px;
     max-width: 100%;
   }
 }

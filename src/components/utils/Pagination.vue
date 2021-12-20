@@ -101,7 +101,8 @@ export default defineComponent({
       }
       if (typeof nb === 'number'
         && nb > 0
-        && nb < props.count + 1) {
+        && nb < props.count + 1
+        && nb !== props.page) {
         context.emit('page-change', nb);
       }
     };
